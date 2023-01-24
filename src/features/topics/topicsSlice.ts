@@ -1,10 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from 'src/redux/store';
+import { RootState } from './../../lib/redux/store';
 
 /**
  * Topics are the questions about how a user wants to play a roleplaying session.
- * Each topic will have a unique id, a question, and a list of 4 possible answers.
- * The user will select one of the answers, and the answer will be used to determine the intensity of the game session.
+ * Each topic will have a unique id, a question, and a list of 4 possible options.
+ * The user will select one of the options, and the answer will be used to determine the intensity of the game session.
  * 0 = Skip - The game session will be determined by the intensity of the group and a warning will be displayed when all the players are reviewing the game session.
  * 1 = Fantasy - The game session will be light-hearted and fun.
  * 2 = Adventure - The game session will be a little more serious, but still fun.
@@ -30,13 +30,13 @@ export interface Topic {
   id: number; // Unique ID for the topic
   label: string; // Label for the topic (Combat, Exploration, etc.)
   question: string; // Question for the topic (You come across a monastery, what do you do?)
-  answers: {
+  options: {
     Fantasy: string;
     Adventure: string;
     Struggle: string;
     Tragedy: string;
   };
-  response: number;
+  response: number; // 0 = Skip, 1 = Fantasy, 2 = Adventure, 3 = Struggle, 4 = Tragedy
 }
 
 // Define the initial state using that type
@@ -47,7 +47,7 @@ const initialState: TopicsState = {
       label: 'Combat',
       question:
         'You are in a dungeon and a goblin attacks you. What do you do?',
-      answers: {
+      options: {
         Fantasy: 'I attack the goblin with my sword.',
         Adventure:
           'I attack the goblin with my sword, and I yell "For the glory of the king!"',
@@ -63,7 +63,7 @@ const initialState: TopicsState = {
       label: 'Torture',
       question:
         'You are captured by a noble lord, how do they extract information from you',
-      answers: {
+      options: {
         Fantasy:
           "The noble lord leaves you in his dungeon for a day, you wish you'd eaten lunch",
         Adventure:

@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from 'src/redux/store';
+import { User } from '../user/userSlice';
+import { RootState } from './../../lib/redux/store';
 
 /**
  * Groups are temporary collections of users that are used to create a party for a game session.
@@ -16,8 +17,9 @@ interface GroupsState {
 export interface Group {
   id: number;
   name: string;
-  inviteLink: string;
+  inviteCode: string;
   intensity: number; // 1 = Fantasy, 2 = Adventure, 3 = Struggle, 4 = Tragedy
+  users: User[];
 }
 
 // Define the initial state using that type
@@ -26,8 +28,9 @@ const initialState: GroupsState = {
     {
       id: 1,
       name: 'Group 1',
-      inviteLink: 'https://www.google.com',
+      inviteCode: 'https://www.google.com',
       intensity: 1,
+      users: [],
     },
   ],
 };

@@ -1,5 +1,6 @@
+import { RootState } from './../../lib/redux/store';
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from 'src/redux/store';
+
 import { Group } from '../groups/groupsSlice';
 import { Phobia } from '../phobias/phobiasSlice';
 import { Topic } from '../topics/topicsSlice';
@@ -21,7 +22,7 @@ export interface User {
   discordId: string;
   name: string;
   phobias: Phobia[];
-  topics: Topic[];
+  topic_responses: Topic[];
   groups: Group[];
 }
 
@@ -32,7 +33,7 @@ const initialState: UserState = {
     discordId: '1234567890',
     name: 'Test User',
     phobias: [],
-    topics: [],
+    topic_responses: [],
     groups: [],
   },
 };
