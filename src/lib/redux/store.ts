@@ -5,10 +5,10 @@ import {
 } from '@reduxjs/toolkit';
 
 // Redux reducers
-import phobiasReducer from '../features/phobias/phobiasSlice';
-import groupsReducer from '../features/groups/groupsSlice';
-import userReducer from '../features/user/userSlice';
-import topicsReducer from '../features/topics/topicsSlice';
+import phobiasReducer from '../../features/phobias/phobiasSlice';
+import groupsReducer from '../../features/groups/groupsSlice';
+import userReducer from '../../features/user/userSlice';
+import topicsReducer from '../../features/topics/topicsSlice';
 
 // Combine reducers to create a root reducer
 const rootReducer = combineReducers({

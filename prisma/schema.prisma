@@ -1,0 +1,110 @@
+generator client {
+  provider        = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum PhobiaPreference {
+  Unaffected
+  Neutral
+  Warning
+  Ban
+}
+
+enum TopicIntensity {
+  Fantasy
+  Adventure
+  Struggle
+  Tragedy
+}
+
+
+// Models
+model User {
+  id          Int      @default(autoincrement()) @id
+  discordId   String
+  name        String
+  phobias     Phobia[] // a user can have many phobias - Consistent across multiple groups
+  topic_responses      Topic[] // a user can have many responses to topics - Not consistent across multiple groups
+  groups      Group[] // a user can be in many groups
+}
+
+
+model Group {
+  id          Int      @default(autoincrement()) @id
+  name        String
+  
+  // Unique invite link for the group
+  inviteCode  String  @unique
+  
+  // Represents the maximum intensity of the group set when the group is created
+  intensity   TopicIntensity 
+  
+  // Users in the group
+  users       User[] 
+}
+
+
+model Phobia {
+  id          Int      @default(autoincrement()) @id
+  
+  // Phobia label and description
+  name        String
+  description String
+  
+  // User to which this phobia response belongs
+  user       User @relation(fields: [userId], references: [id])
+  userId Int
+  
+  // User response to the phobia
+  preference   PhobiaPreference
+}
+
+
+model Topic {
+  id          Int      @default(autoincrement()) @id
+  
+  // User to which this topic response belongs
+  user       User @relation(fields: [userId], references: [id])
+  userId Int
+  
+  // Topic label
+  label       String
+  
+  // Topic question and answers
+  question    String
+  options    String[]
+  
+  // User response to the topic intensity
+  response    TopicIntensity
+}
+
+
+// In order to have an immutable set of Phobias, we need to create a new table for them
+model PhobiaList {
+  id          Int      @default(autoincrement()) @id
+  
+  // Phobia label and description
+  name        String
+  description String
+}
+
+// In order to have an immutable set of Topics, we need to create a new table for them
+model TopicList {
+  id          Int      @default(autoincrement()) @id
+  
+  // Topic label
+  label       String
+  
+  // Topic question and answers
+  question    String
+  options    String[]
+}
+
+
+
