@@ -1,6 +1,6 @@
 import React from 'react';
 import { selectPhobias } from 'src/features/phobias/phobiasSlice';
-import { useAppSelector } from 'src/redux/hooks';
+import { useAppSelector } from 'src/lib/redux/hooks';
 
 function Home() {
   const phobias = useAppSelector(selectPhobias);

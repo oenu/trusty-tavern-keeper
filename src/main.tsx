@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import App from './app/app';
 
-import { setupStore } from './redux/store';
+import { setupStore } from './lib/redux/store';
 export const store = setupStore();
 
 const root = ReactDOM.createRoot(

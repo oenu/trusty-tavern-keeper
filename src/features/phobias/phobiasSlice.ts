@@ -1,5 +1,5 @@
+import { RootState } from './../../lib/redux/store';
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from 'src/redux/store';
 
 /**
  * Phobias are a list of fears that a user might have. Each survey respondent will respond to each phobia with either 0, 1, 2, 3, 4, or 5.
