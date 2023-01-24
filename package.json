@@ -1,6 +1,7 @@
 {
   "name": "trusty-tavern-keeper",
   "version": "0.0.0",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "start": "nx serve",
@@ -9,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "@prisma/client": "^4.5.0",
     "@reduxjs/toolkit": "^1.9.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -25,6 +27,7 @@
     "@nrwl/react": "15.5.3",
     "@nrwl/vite": "15.5.3",
     "@nrwl/workspace": "15.5.3",
+    "@nx-tools/nx-prisma": "^4.0.3",
     "@testing-library/react": "13.4.0",
     "@types/eslint": "~8.4.10",
     "@types/jsdom": "~20.0.1",
@@ -52,7 +55,9 @@
     "jsdom": "~20.0.3",
     "nx": "15.5.3",
     "prettier": "^2.6.2",
+    "prisma": "^4.5.0",
     "react-test-renderer": "18.2.0",
+    "ts-node": "^10.9.1",
     "typescript": "~4.8.2",
     "vite": "^4.0.1",
     "vite-plugin-eslint": "^1.8.1",
