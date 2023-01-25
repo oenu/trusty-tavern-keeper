@@ -1,2 +1,19 @@
-// Handle a user registering with discord
-// use the token from supabase.auth.signInWithOAuth to get the user's info
+import { Session } from '@supabase/supabase-js';
+
+export const handleRegister = async ({
+  session,
+}: {
+  session: Session | null;
+}) => {
+  if (!session) {
+    console.debug('handleRegister: No session found');
+    return;
+  }
+
+  const token = session.provider_token;
+
+  if (!token) {
+    console.debug('handleRegister: No token found');
+    throw new Error('No token found');
+  }
+};

@@ -1,4 +1,4 @@
-import { AppShell } from '@mantine/core';
+import { AppShell, Button } from '@mantine/core';
 import styled from 'styled-components';
 
 // App Router
@@ -8,6 +8,7 @@ import NavHeader from 'src/features/nav/NavHeader';
 
 import { supabase } from 'src/lib/supabase/client';
 import Router from './Router';
+import { handleRegister } from 'src/features/auth/register';
 
 const StyledApp = styled.div`
   // Your style here
@@ -49,6 +50,13 @@ export function App() {
       >
         {/* Your application here */}
         <Router />
+        <Button
+          onClick={() => {
+            handleRegister({ session });
+          }}
+        >
+          Test
+        </Button>
       </AppShell>
     </StyledApp>
   );
