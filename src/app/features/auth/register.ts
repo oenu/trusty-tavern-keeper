@@ -21,13 +21,13 @@ export const handleRegister = async ({
 
   // Test discord API to get current user info
 
-  console.debug('handleRegister: Testing discord API to get current user info');
-  const discordUser = (await ky('https://discord.com/api/users/@me', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }).json()) as APIUser;
-  console.debug(discordUser.avatar);
+  // console.debug('handleRegister: Testing discord API to get current user info');
+  // const discordUser = (await ky('https://discord.com/api/users/@me', {
+  //   headers: {
+  //     Authorization: `Bearer ${token}`,
+  //   },
+  // }).json()) as APIUser;
+  // console.debug(discordUser.avatar);
 
-  console.debug('handleRegister: discordUser', discordUser);
+  // console.debug('handleRegister: discordUser', discordUser);
 };
