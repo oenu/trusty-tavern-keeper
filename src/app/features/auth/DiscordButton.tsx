@@ -5,8 +5,8 @@ import {
 import { OAuthResponse, Session } from '@supabase/supabase-js';
 
 import { SiDiscord } from 'react-icons/si';
-import { supabase } from 'src/lib/supabase/client';
-import { signInWithDiscord } from 'src/features/auth/discord';
+import { supabase } from 'src/app/supabase/client';
+import { signInWithDiscord } from 'src/app/features/auth/discord';
 
 // Component to handle Discord login - shows sign in button if user is not logged in and sign out button if user is logged in
 export function DiscordButton({

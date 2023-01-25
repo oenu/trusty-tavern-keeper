@@ -2,9 +2,9 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 // Screens
-import Home from 'src/screens/Home/Home';
-import Survey from 'src/screens/Survey/Survey';
-import Login from 'src/screens/Login/Login';
+import Home from './screens/Home/Home';
+import Survey from './screens/Survey/Survey';
+import Login from './screens/Login/Login';
 
 function Router() {
   return (
