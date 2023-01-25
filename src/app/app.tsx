@@ -4,11 +4,11 @@ import styled from 'styled-components';
 // App Router
 import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
-import NavHeader from 'src/features/nav/NavHeader';
 
 import { supabase } from 'src/lib/supabase/client';
 import Router from './Router';
 import { handleRegister } from 'src/features/auth/register';
+import { AppNavbar } from 'src/features/nav/AppNavbar';
 
 const StyledApp = styled.div`
   // Your style here
@@ -38,7 +38,8 @@ export function App() {
     <StyledApp>
       <AppShell
         padding="md"
-        header={<NavHeader session={session} />}
+        // header={<NavHeader session={session} />}
+        navbar={<AppNavbar session={session} />}
         styles={(theme) => ({
           main: {
             backgroundColor:
@@ -55,7 +56,7 @@ export function App() {
             handleRegister({ session });
           }}
         >
-          Test
+          Test Discord API
         </Button>
       </AppShell>
     </StyledApp>
