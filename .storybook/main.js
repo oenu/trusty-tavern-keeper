@@ -10,7 +10,7 @@ module.exports = {
     '../src/app/**/*.stories.mdx',
     '../src/app/**/*.stories.@(js|jsx|ts|tsx)',
   ],
-  addons: [...rootMain.addons],
+  addons: [...rootMain.addons, 'storybook-addon-react-router-v6'],
   async viteFinal(config, { configType }) {
     return mergeConfig(config, {
       plugins: [
