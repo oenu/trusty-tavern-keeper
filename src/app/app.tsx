@@ -34,6 +34,18 @@ export function App() {
     setSession(session);
   });
 
+  const testSupabase = async () => {
+    const user = (await supabase.auth.getUser()).data.user?.id;
+    console.log(user);
+
+    const { data, error } = await supabase.from('group').select('*');
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(data);
+    }
+  };
+
   return (
     <StyledApp>
       <AppShell
@@ -57,6 +69,35 @@ export function App() {
           }}
         >
           Test Discord API
+        </Button>
+        <Button
+          onClick={() => {
+            supabase.auth.signOut();
+          }}
+        >
+          Sign out
+        </Button>
+        <Button
+          onClick={async () => {
+            const { data, error } = await supabase.rpc('create_group', {
+              name: 'testGroupName',
+              intensity: 'Adventure',
+            });
+
+            if (error) {
+              console.log(error);
+            }
+            console.log(data);
+          }}
+        >
+          Create Group (test)
+        </Button>
+        <Button
+          onClick={() => {
+            testSupabase();
+          }}
+        >
+          Get list of groups im in
         </Button>
       </AppShell>
     </StyledApp>
