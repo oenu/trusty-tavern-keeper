@@ -4,11 +4,11 @@ import styled from 'styled-components';
 // App Router
 import { Session } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
-import NavHeader from 'src/features/nav/NavHeader';
 
-import { supabase } from 'src/lib/supabase/client';
+import { supabase } from 'src/app/supabase/client';
 import Router from './Router';
-import { handleRegister } from 'src/features/auth/register';
+import { handleRegister } from 'src/app/features/auth/register';
+import { AppNavbar } from 'src/app/features/nav/AppNavbar';
 
 const StyledApp = styled.div`
   // Your style here
@@ -34,11 +34,24 @@ export function App() {
     setSession(session);
   });
 
+  const testSupabase = async () => {
+    const user = (await supabase.auth.getUser()).data.user?.id;
+    console.log(user);
+
+    const { data, error } = await supabase.from('group').select('*');
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(data);
+    }
+  };
+
   return (
     <StyledApp>
       <AppShell
         padding="md"
-        header={<NavHeader session={session} />}
+        // header={<NavHeader session={session} />}
+        navbar={<AppNavbar session={session} />}
         styles={(theme) => ({
           main: {
             backgroundColor:
@@ -55,7 +68,36 @@ export function App() {
             handleRegister({ session });
           }}
         >
-          Test
+          Test Discord API
+        </Button>
+        <Button
+          onClick={() => {
+            supabase.auth.signOut();
+          }}
+        >
+          Sign out
+        </Button>
+        <Button
+          onClick={async () => {
+            const { data, error } = await supabase.rpc('create_group', {
+              name: 'testGroupName',
+              intensity: 'Adventure',
+            });
+
+            if (error) {
+              console.log(error);
+            }
+            console.log(data);
+          }}
+        >
+          Create Group (test)
+        </Button>
+        <Button
+          onClick={() => {
+            testSupabase();
+          }}
+        >
+          Get list of groups im in
         </Button>
       </AppShell>
     </StyledApp>

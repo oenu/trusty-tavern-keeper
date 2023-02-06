@@ -5,8 +5,8 @@ import {
 import { OAuthResponse, Session } from '@supabase/supabase-js';
 
 import { SiDiscord } from 'react-icons/si';
-import { supabase } from 'src/lib/supabase/client';
-import { signInWithDiscord } from 'src/features/auth/discord';
+import { supabase } from 'src/app/supabase/client';
+import { signInWithDiscord } from 'src/app/features/auth/discord';
 
 // Component to handle Discord login - shows sign in button if user is not logged in and sign out button if user is logged in
 export function DiscordButton({
@@ -48,7 +48,7 @@ export function DiscordButton({
         Sign Out
       </Button>
     );
-  } else
+  } else if (label) {
     return (
       <Button
         leftIcon={<SiDiscord size={16} />}
@@ -63,7 +63,25 @@ export function DiscordButton({
           },
         })}
       >
-        {label ? 'Sign in with Discord' : null}
+        Sign in with Discord
       </Button>
     );
+  } else {
+    return (
+      <Button
+        onClick={handleLogin}
+        sx={(theme) => ({
+          backgroundColor: theme.colorScheme === 'dark' ? '#5865F2' : '#5865F2',
+          '&:hover': {
+            backgroundColor:
+              theme.colorScheme === 'dark'
+                ? theme.fn.lighten('#5865F2', 0.05)
+                : theme.fn.darken('#5865F2', 0.05),
+          },
+        })}
+      >
+        <SiDiscord size={16} />
+      </Button>
+    );
+  }
 }

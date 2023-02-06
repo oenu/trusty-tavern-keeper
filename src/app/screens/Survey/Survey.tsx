@@ -2,7 +2,7 @@ import { User } from '@supabase/supabase-js';
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { supabase } from 'src/lib/supabase/client';
+import { supabase } from 'src/app/supabase/client';
 
 function Survey() {
   const [currentUser, setCurrentUser] = React.useState<null | User>(null);
