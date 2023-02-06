@@ -2,18 +2,20 @@ import {
   Navbar,
   Group,
   Code,
-  ScrollArea,
+  // ScrollArea,
   Avatar,
   UnstyledButton,
   Text,
 } from '@mantine/core';
 import { createStyles } from '@mantine/styles';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { TbChevronRight } from 'react-icons/tb';
+import { FaDiceD20 } from 'react-icons/fa';
 import { Session } from '@supabase/supabase-js';
 import { SiDiscord } from 'react-icons/si';
 import { DiscordButton } from '../auth/DiscordButton';
 import { NavLink } from 'react-router-dom';
+import { supabase } from 'src/app/supabase/client';
 const data = [
   { link: 'test', label: 'test', icon: TbChevronRight },
   { link: 'discord', label: 'discord', icon: SiDiscord },
@@ -107,20 +109,56 @@ export function AppNavbar({ session }: { session: Session | null }) {
   const { classes, cx } = useStyles();
   const [active, setActive] = useState('test');
 
-  console.log(session);
-  const links = data.map((item) => (
+  // HACK: This will be replaced with a proper type once the supabase client is updated
+  type Group = {
+    // id: 1
+    id: number;
+    // initial_intensity: "Adventure"
+    initial_intensity: string;
+    // invite_code: "e0e6db"
+    invite_code: string;
+    // name: "testGroupName"
+    name: string;
+    // owner: "90e4dee5-aa27-4e6f-bc24-f6d5b095198c"
+    owner: string;
+  };
+
+  // Group list for sidebar
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  // Get groups from supabase
+  const getGroups = async (): Promise<Group[]> => {
+    const { data, error } = await supabase.from('group').select('*');
+    if (error) {
+      console.log(error);
+    }
+    return data as Group[];
+  };
+
+  useEffect(() => {
+    console.log('Getting groups');
+    getGroups().then((data) => {
+      setGroups(data);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const links = groups.map((group) => (
     <NavLink
       className={cx(classes.link, {
-        [classes.linkActive]: item.label === active,
+        [classes.linkActive]: group.invite_code === active,
       })}
-      to={item.link}
-      key={item.label}
+      // className={classes.link}
+      to={group.invite_code}
+      key={group.invite_code}
       onClick={(event) => {
-        setActive(item.label);
+        setActive(group.invite_code);
       }}
     >
-      <item.icon className={classes.linkIcon} stroke={'1.5'} />
-      <span>{item.label}</span>
+      <Group>
+        <FaDiceD20 />
+        {group.name}
+      </Group>
     </NavLink>
   ));
 
