@@ -122,6 +122,30 @@ CREATE TABLE public.user_group (
 ALTER TABLE public.user_group ENABLE ROW LEVEL SECURITY;
 
 
+-- The function that allows a user to see how many users are in a group they are in
+CREATE OR REPLACE FUNCTION public.get_group_size(
+  group_id INTEGER
+) returns INTEGER AS $$
+DECLARE
+  group_size INTEGER;
+BEGIN
+  -- Check if the user is in the group
+  IF NOT EXISTS (SELECT * FROM public.user_group WHERE group_id = group_id AND user_id = auth.uid()) THEN
+    RAISE EXCEPTION 'User is not in group';
+    -- NOTE: RAISE EXCEPTION will stop the function from executing and will return an error message
+  END IF;
+  -- Retrieve the number of users in the group
+  SELECT COUNT(*) INTO group_size FROM public.user_group WHERE group_id = group_id;
+  -- Return the number of users in the group
+  RETURN group_size;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+
+
 -- The function that allows a user to join a group with a given invite code
 CREATE OR REPLACE FUNCTION public.join_group_with_code(
   invite TEXT
@@ -204,12 +228,17 @@ create trigger on_group_deleted
   for each row execute procedure public.delete_group();
 
 
+-- The function that prevents users from seeing the owner of a group
+-- TODO: Implement this functionality to protect the owner's identity from other users
+-- CREATE POLICY "Group members should not be able to see the owners personal ID" 
+-- ON "group" FOR SELECT
+-- USING (EXISTS (SELECT 1 FROM public.user_group WHERE user_id = auth.uid() AND group_id = id));
 
 
 
 CREATE POLICY "Groups are viewable by users who are members of the group."
 ON "group" FOR SELECT
-USING ( EXISTS (SELECT 1 FROM public.user_group WHERE user_id = auth.uid() AND group_id = id) );
+USING (EXISTS (SELECT 1 FROM public.user_group WHERE user_id = auth.uid() AND group_id = id));
 
 CREATE POLICY "Groups are viewable by users who created them."
 ON "group" FOR SELECT

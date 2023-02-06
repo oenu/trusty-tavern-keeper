@@ -3,23 +3,20 @@ import {
   Group,
   Code,
   // ScrollArea,
-  Avatar,
-  UnstyledButton,
   Text,
 } from '@mantine/core';
+import { useContext, useEffect, useState } from 'react';
 import { createStyles } from '@mantine/styles';
-import { forwardRef, useEffect, useState } from 'react';
-import { TbChevronRight } from 'react-icons/tb';
-import { FaDiceD20 } from 'react-icons/fa';
-import { Session } from '@supabase/supabase-js';
-import { SiDiscord } from 'react-icons/si';
-import { DiscordButton } from '../auth/DiscordButton';
-import { NavLink } from 'react-router-dom';
+import { FaDiceD20, FaPlus } from 'react-icons/fa';
+import { NavLink, useLocation } from 'react-router-dom';
+
+// Components
+import { UserButton } from '../UserButton/UserButton';
+import { DiscordButton } from '../../auth/DiscordButton';
+
+// Supabase
 import { supabase } from 'src/app/supabase/client';
-const data = [
-  { link: 'test', label: 'test', icon: TbChevronRight },
-  { link: 'discord', label: 'discord', icon: SiDiscord },
-];
+import { SessionContext } from 'src/app/app';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');
@@ -105,55 +102,41 @@ const useStyles = createStyles((theme, _params, getRef) => {
   };
 });
 
-export function AppNavbar({ session }: { session: Session | null }) {
-  const { classes, cx } = useStyles();
-  const [active, setActive] = useState('test');
+export function AppNavbar() {
+  const session = useContext(SessionContext);
+  const location = useLocation();
 
-  // HACK: This will be replaced with a proper type once the supabase client is updated
-  type Group = {
-    // id: 1
-    id: number;
-    // initial_intensity: "Adventure"
-    initial_intensity: string;
-    // invite_code: "e0e6db"
-    invite_code: string;
-    // name: "testGroupName"
-    name: string;
-    // owner: "90e4dee5-aa27-4e6f-bc24-f6d5b095198c"
-    owner: string;
-  };
+  const { classes, cx } = useStyles();
 
   // Group list for sidebar
   const [groups, setGroups] = useState<Group[]>([]);
 
   // Get groups from supabase
-  const getGroups = async (): Promise<Group[]> => {
+  const getGroups = async () => {
     const { data, error } = await supabase.from('group').select('*');
     if (error) {
       console.log(error);
+    } else {
+      setGroups(data);
     }
-    return data as Group[];
   };
 
   useEffect(() => {
-    console.log('Getting groups');
-    getGroups().then((data) => {
-      setGroups(data);
-    });
+    // Get session
+    getGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const links = groups.map((group) => (
     <NavLink
       className={cx(classes.link, {
-        [classes.linkActive]: group.invite_code === active,
+        [classes.linkActive]: location.pathname.includes(
+          `/group/${group.invite_code}`
+        ),
       })}
       // className={classes.link}
-      to={group.invite_code}
+      to={`/group/${group.invite_code}`}
       key={group.invite_code}
-      onClick={(event) => {
-        setActive(group.invite_code);
-      }}
     >
       <Group>
         <FaDiceD20 />
@@ -173,7 +156,21 @@ export function AppNavbar({ session }: { session: Session | null }) {
         </Group>
       </Navbar.Section>
       <Navbar.Section grow>{links}</Navbar.Section>
-      {session ? (
+      <NavLink
+        style={{ marginBottom: '1rem' }}
+        className={cx(classes.link, {
+          [classes.linkActive]: location.pathname.includes(`/create`),
+        })}
+        to="/create"
+      >
+        <Group style={{ fontWeight: 700 }}>
+          <FaPlus />
+          Create New Group
+        </Group>
+      </NavLink>
+      {/* Create new Group */}
+      {/* <Navbar.Section></Navbar.Section> */}
+      {session?.user ? (
         <Navbar.Section className={classes.footer}>
           <UserButton
             image={session?.user.user_metadata.avatar_url}
@@ -194,48 +191,3 @@ export function AppNavbar({ session }: { session: Session | null }) {
     </Navbar>
   );
 }
-
-interface UserButtonProps extends React.ComponentPropsWithoutRef<'button'> {
-  image: string;
-  name: string;
-  discriminator: string;
-  icon?: React.ReactNode;
-}
-const UserButton = forwardRef<HTMLButtonElement, UserButtonProps>(
-  ({ image, name, discriminator, icon, ...others }: UserButtonProps, ref) => (
-    <UnstyledButton
-      ref={ref}
-      sx={(theme) => ({
-        display: 'block',
-        width: '100%',
-        padding: theme.spacing.md,
-        color:
-          theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.black,
-
-        '&:hover': {
-          backgroundColor:
-            theme.colorScheme === 'dark'
-              ? theme.colors.dark[8]
-              : theme.colors.gray[0],
-        },
-      })}
-      {...others}
-    >
-      <Group>
-        <Avatar src={image} radius="xl" />
-
-        <div style={{ flex: 1 }}>
-          <Text size="sm" weight={500}>
-            {name}
-          </Text>
-
-          <Text color="dimmed" size="xs">
-            {discriminator}
-          </Text>
-        </div>
-
-        {icon || <TbChevronRight size={16} />}
-      </Group>
-    </UnstyledButton>
-  )
-);

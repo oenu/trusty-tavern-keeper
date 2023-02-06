@@ -5,12 +5,23 @@ import { Route, Routes } from 'react-router-dom';
 import Home from './screens/Home/Home';
 import Survey from './screens/Survey/Survey';
 import Login from './screens/Login/Login';
+import Group from './screens/Group/Group';
+import CreateGroup from './screens/CreateGroup/CreateGroup';
+import Profile from './screens/Profile/Profile';
+import Debug from './screens/Debug/Debug';
 
-function Router() {
+// Types
+import { Session } from '@supabase/supabase-js';
+
+function Router({ session }: { session: Session | null }) {
   return (
     <Routes>
       <Route path="/survey/:id" element={<Survey />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/group/:invite_code" element={<Group />} />
+      <Route path="/create" element={<CreateGroup />} />
+      <Route path="/debug" element={<Debug session={session} />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Home />} index />
       <Route path="*" element={<div>404</div>} />
     </Routes>
