@@ -17,6 +17,7 @@ import { DiscordButton } from '../../auth/DiscordButton';
 // Supabase
 import { supabase } from 'src/app/supabase/client';
 import { SessionContext } from 'src/app/app';
+import JoinBox from '../JoinBox/JoinBox';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');
@@ -155,7 +156,11 @@ export function AppNavbar() {
           <Code sx={{ fontWeight: 700 }}>v0.0.1</Code>
         </Group>
       </Navbar.Section>
+
       <Navbar.Section grow>{links}</Navbar.Section>
+      <Navbar.Section mb={'md'}>
+        <JoinBox />
+      </Navbar.Section>
       <NavLink
         style={{ marginBottom: '1rem' }}
         className={cx(classes.link, {
