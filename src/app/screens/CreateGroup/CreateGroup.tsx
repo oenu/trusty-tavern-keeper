@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from 'src/app/supabase/client';
 
-function CreateGroup() {
+function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
   const navigate = useNavigate();
   return (
     <div>
@@ -18,6 +18,7 @@ function CreateGroup() {
           if (error) console.log(error);
           if (data) {
             console.log(data);
+            await getGroups();
             navigate(`/group/${data}`);
           }
         }}

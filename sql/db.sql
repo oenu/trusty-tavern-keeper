@@ -20,10 +20,14 @@ DROP FUNCTION IF EXISTS public.join_group_with_code cascade;
 DROP FUNCTION IF EXISTS public.delete_group cascade;
 DROP FUNCTION IF EXISTS public.leave_group cascade;
 DROP FUNCTION IF EXISTS public.create_group cascade;
+DROP FUNCTION IF EXISTS public.get_group_users cascade;
+DROP FUNCTION IF EXISTS public.get_group_size cascade;
+DROP FUNCTION IF EXISTS public.delete_group_on_owner_leave cascade;
 
 
 -- Drop all triggers
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users cascade;
+DROP TRIGGER IF EXISTS on_owner_leaves_group ON auth.users cascade;
 
 -- Delete all users in auth.users
 DELETE FROM auth.users;
@@ -46,7 +50,10 @@ CREATE TYPE TopicIntensity AS ENUM ('Fantasy', 'Adventure', 'Struggle', 'Tragedy
 */
 CREATE TABLE public.user (
     id uuid REFERENCES auth.users ON DELETE CASCADE NOT NULL,
-    name TEXT NOT NULL,
+    discord_id TEXT NOT NULL, -- Discord ID
+    profile_picture TEXT NOT NULL, -- URL to the profile picture
+    name TEXT NOT NULL, -- Name + discriminator
+    full_name TEXT NOT NULL, -- Name that is displayed on the profile
     PRIMARY KEY (id)
 );
 ALTER TABLE public.user ENABLE ROW LEVEL SECURITY;
@@ -70,8 +77,8 @@ security definer set search_path = public -- Define security rules: trusted sche
 as $$ -- Start definition of the function
 begin
   -- Link the user to the auth.users table and extract the full_name
-  insert into public.user (id, name)
-  values (new.id, new.raw_user_meta_data ->> 'full_name');
+  insert into public.user (id, full_name, name, discord_id, profile_picture)
+  values (new.id, new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name', new.raw_user_meta_data ->> 'provider_id', new.raw_user_meta_data ->> 'avatar_url');
   return new;
 end;
 $$; -- Return the function
@@ -94,7 +101,7 @@ VALUES (
 '2023-02-06 10:44:44.461272+00',
 '2023-02-06 10:44:44.454399+00',
 '{"provider":"discord","providers":["discord"]}',
-'{"iss":"https://discord.com/api","sub":"159985870458322944","name":"mee6#4876","email":"test@example.com","picture":"https://cdn.discordapp.com/avatars/159985870458322944/b50adff099924dd5e6b72d13f77eb9d7","full_name":"Mee6","avatar_url":"https://cdn.discordapp.com/avatars/159985870458322944/b50adff099924dd5e6b72d13f77eb9d7","provider_id":"000000000000000000","email_verified":true}',
+'{"iss":"https://discord.com/api","sub":"159985870458322944","name":"mee6#4876","email":"test@example.com","picture":"https://cdn.discordapp.com/avatars/159985870458322944/b50adff099924dd5e6b72d13f77eb9d7","full_name":"Mee6","avatar_url":"https://cdn.discordapp.com/avatars/159985870458322944/b50adff099924dd5e6b72d13f77eb9d7","provider_id":"159985870458322944","email_verified":true}',
 '2023-02-06 10:44:44.461272+00', '2023-02-06 10:44:44.461272+00');
 
 -- INSERT INTO public.user (id, name)
@@ -117,7 +124,7 @@ Users will answer questions about their phobias and topics. The answers will be 
 */
 
 CREATE TABLE public.group (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
     invite_code TEXT UNIQUE NOT NULL,
     initial_intensity TopicIntensity NOT NULL,
@@ -141,18 +148,18 @@ ALTER TABLE public.user_group ENABLE ROW LEVEL SECURITY;
 
 -- The function that allows a user to see how many users are in a group they are in
 CREATE OR REPLACE FUNCTION public.get_group_size(
-  group_id INTEGER
+  req_id INTEGER
 ) returns INTEGER AS $$
 DECLARE
   group_size INTEGER;
 BEGIN
   -- Check if the user is in the group
-  IF NOT EXISTS (SELECT * FROM public.user_group WHERE group_id = group_id AND user_id = auth.uid()) THEN
+  IF NOT EXISTS (SELECT * FROM public.user_group WHERE group_id = req_id AND user_id = auth.uid()) THEN
     RAISE EXCEPTION 'User is not in group';
     -- NOTE: RAISE EXCEPTION will stop the function from executing and will return an error message
   END IF;
   -- Retrieve the number of users in the group
-  SELECT COUNT(*) INTO group_size FROM public.user_group WHERE group_id = group_id;
+  SELECT COUNT(*) INTO group_size FROM public.user_group WHERE group_id = req_id;
   -- Return the number of users in the group
   RETURN group_size;
 END;
@@ -167,19 +174,27 @@ $$ LANGUAGE plpgsql;
 -- The function that allows a user to join a group with a given invite code
 CREATE OR REPLACE FUNCTION public.join_group_with_code(
   invite TEXT
-) returns TEXT 
+) returns JSON
+security definer set search_path = public
  AS $$
 DECLARE
   group_to_join INTEGER;
 BEGIN
+
+-- Check if the invite is a number or text
+  IF NOT (invite::TEXT ~ '^[0-9]+$' OR invite::TEXT ~ '^[a-zA-Z]+$') THEN
+    RAISE EXCEPTION 'Invalid invite code type (must be a number or text))';
+    -- NOTE: RAISE EXCEPTION will stop the function from executing and will return an error message
+  END IF;
+
   -- Check if the invite code is valid
-  IF NOT EXISTS (SELECT * FROM public.group WHERE invite_code = invite) THEN
-    RAISE EXCEPTION 'Invalid invite code';
+  IF NOT EXISTS (SELECT * FROM public.group WHERE invite_code::TEXT = invite::TEXT) THEN
+    RAISE EXCEPTION 'Invalid invite code: %', invite::TEXT;
     -- NOTE: RAISE EXCEPTION will stop the function from executing and will return an error message
   END IF;
 
 -- Retrieve the group id for the given invite code
-  SELECT id INTO group_to_join FROM public.group WHERE invite_code = invite;
+  SELECT id INTO group_to_join FROM public.group WHERE invite_code = invite::TEXT;
 
   -- Check if the user is already in the group
 IF EXISTS (SELECT * FROM public.user_group WHERE group_id = group_to_join AND user_id = auth.uid()) THEN
@@ -194,8 +209,10 @@ IF EXISTS (SELECT * FROM public.user_group WHERE group_id = group_to_join AND us
   VALUES (auth.uid(), group_to_join);
 
 
-  -- Return a success message
-  RETURN 'Successfully joined group with code: ' || invite;
+  -- Return a success message 
+  -- RETURN json_build_object('message', 'Successfully joined group with id: ' ||  group_to_join::TEXT, 'group_id', group_to_join, 'invite_code', invite::TEXT);
+  -- Returns json object inside an array
+  RETURN json_build_array(json_build_object('message', 'Successfully joined group with id: ' ||  group_to_join::TEXT, 'group_id', group_to_join, 'invite_code', invite::TEXT));
 END;
 $$ LANGUAGE plpgsql;
 
@@ -204,13 +221,13 @@ $$ LANGUAGE plpgsql;
 
 -- The function that allows a user to leave a group
 CREATE OR REPLACE FUNCTION public.leave_group(
-  group_id INTEGER
+  req_id INTEGER
 ) returns TEXT AS $$
 BEGIN
   -- Delete the current user and the group id from the user_group table
-  DELETE FROM public.user_group WHERE user_id = auth.uid() AND group_id = group_id;
+  DELETE FROM public.user_group WHERE user_id = auth.uid() AND group_id = req_id;
   -- Return a success message
-  RETURN 'Successfully left group with id: ' || group_id;
+  RETURN 'Successfully left group with id: ' ||  req_id::TEXT;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -227,7 +244,10 @@ DECLARE
 BEGIN
 
   -- Check if the user already owns 10 groups
-  IF EXISTS (SELECT * FROM public.group WHERE owner = auth.uid()) THEN
+  -- IF EXISTS (SELECT * FROM public.group WHERE owner = auth.uid()) THEN
+    -- RAISE EXCEPTION 'Maximum number of groups reached (10)';
+  -- END IF;
+  IF (SELECT COUNT(*) FROM public.group WHERE owner = auth.uid()) >= 10 THEN
     RAISE EXCEPTION 'Maximum number of groups reached (10)';
   END IF;
 
@@ -259,8 +279,8 @@ BEGIN
   -- PERFORM public.elevated_insert_user_group(auth.uid(), currval('group_id_seq'));
 
 
-  -- Return the invite code
-  RETURN invite;
+  -- Return the group id
+  RETURN currval('group_id_seq');
 END;
 $$ LANGUAGE plpgsql;
 
@@ -282,6 +302,67 @@ $$;
 create trigger on_group_deleted
   after delete on public.group
   for each row execute procedure public.delete_group();
+
+
+CREATE FUNCTION public.delete_group_on_owner_leave()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  -- Delete the group if the owner leaves
+  delete from public.group where id = old.group_id and owner = old.user_id;
+  return old;
+end;
+$$;
+
+
+-- Trigger the delete group function when the owner leaves the group
+create trigger on_owner_leaves_group
+  after delete on public.user_group
+  for each row execute procedure public.delete_group_on_owner_leave();
+
+
+
+-- Function that returns the list of users in a group, must be a member of the group
+CREATE OR REPLACE FUNCTION public.get_group_users(
+  req_id INTEGER
+) returns TABLE (
+  full_name TEXT,
+  name TEXT,
+  discord_id TEXT,
+  profile_picture TEXT,
+  is_owner BOOLEAN
+) 
+security definer set search_path = public
+AS $$
+BEGIN
+
+  -- Get the group id from the invite code
+  -- SELECT id INTO var_group_id FROM public.group WHERE invite_code = invite::TEXT;
+
+  -- Check if the user is a member of the group
+  IF NOT EXISTS (SELECT * FROM public.user_group WHERE group_id = req_id AND user_id = auth.uid()) THEN
+    RAISE EXCEPTION 'User is not a member of the group';
+  END IF;
+
+  -- Return the list of users in the group (rewrite to include owner)
+  RETURN QUERY
+  SELECT u.full_name, u.name, u.discord_id, u.profile_picture, g.owner = u.id
+  FROM public.user_group ug
+  INNER JOIN public.user u ON ug.user_id = u.id
+  INNER JOIN public.group g ON ug.group_id = g.id
+  WHERE ug.group_id = req_id;
+END
+
+$$ LANGUAGE plpgsql;
+
+
+
+
+
+
+
 
 
 -- The function that prevents users from seeing the owner of a group
@@ -330,17 +411,13 @@ USING ( auth.uid() = user_id );
 
 
 
-
-
-
-
-
-
 -- Seed data for the group table
 INSERT INTO public.group (name, invite_code, initial_intensity, owner) VALUES ('SQL Seed Group', '123456', 'Adventure', '00000000-0000-0000-0000-000000000000');
 
 -- Seed data for the user_group table
-INSERT INTO public.user_group (user_id, group_id) VALUES ('00000000-0000-0000-0000-000000000000', 1);
+-- INSERT INTO public.user_group (user_id, group_id) VALUES ('00000000-0000-0000-0000-000000000000', 1);
+-- rewrite this to use a select statement to get the id of the group that was just inserted
+INSERT INTO public.user_group (user_id, group_id) VALUES ('00000000-0000-0000-0000-000000000000', (SELECT id FROM public.group WHERE invite_code = '123456'));
 
 
 -- #endregion

@@ -1,22 +1,23 @@
 import {
-  Navbar,
-  Group,
   Code,
+  Group,
+  Navbar,
   // ScrollArea,
   Text,
 } from '@mantine/core';
-import { useContext, useEffect, useState } from 'react';
 import { createStyles } from '@mantine/styles';
+import { useContext } from 'react';
 import { FaDiceD20, FaPlus } from 'react-icons/fa';
 import { NavLink, useLocation } from 'react-router-dom';
 
 // Components
-import { UserButton } from '../UserButton/UserButton';
 import { DiscordButton } from '../../auth/DiscordButton';
+import { UserButton } from '../UserButton/UserButton';
 
 // Supabase
-import { supabase } from 'src/app/supabase/client';
 import { SessionContext } from 'src/app/app';
+import { GroupContext } from 'src/app/app';
+
 import JoinBox from '../JoinBox/JoinBox';
 
 const useStyles = createStyles((theme, _params, getRef) => {
@@ -39,6 +40,7 @@ const useStyles = createStyles((theme, _params, getRef) => {
     },
 
     link: {
+      cursor: 'pointer',
       ...theme.fn.focusStyles(),
       display: 'flex',
       alignItems: 'center',
@@ -103,41 +105,22 @@ const useStyles = createStyles((theme, _params, getRef) => {
   };
 });
 
-export function AppNavbar() {
+export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
   const session = useContext(SessionContext);
+  const groups = useContext(GroupContext);
+
   const location = useLocation();
 
   const { classes, cx } = useStyles();
 
-  // Group list for sidebar
-  const [groups, setGroups] = useState<Group[]>([]);
-
-  // Get groups from supabase
-  const getGroups = async () => {
-    const { data, error } = await supabase.from('group').select('*');
-    if (error) {
-      console.log(error);
-    } else {
-      setGroups(data);
-    }
-  };
-
-  useEffect(() => {
-    // Get session
-    getGroups();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const links = groups.map((group) => (
+  const links = groups?.map((group) => (
     <NavLink
       className={cx(classes.link, {
-        [classes.linkActive]: location.pathname.includes(
-          `/group/${group.invite_code}`
-        ),
+        [classes.linkActive]: location.pathname.includes(`/group/${group.id}`),
       })}
-      // className={classes.link}
-      to={`/group/${group.invite_code}`}
-      key={group.invite_code}
+      to={`/group/${group.id}`}
+      key={group.id}
+      onClick={getGroups}
     >
       <Group>
         <FaDiceD20 />
@@ -159,7 +142,7 @@ export function AppNavbar() {
 
       <Navbar.Section grow>{links}</Navbar.Section>
       <Navbar.Section mb={'md'}>
-        <JoinBox />
+        <JoinBox getGroups={getGroups} />
       </Navbar.Section>
       <NavLink
         style={{ marginBottom: '1rem' }}
@@ -174,7 +157,7 @@ export function AppNavbar() {
         </Group>
       </NavLink>
       {/* Create new Group */}
-      {/* <Navbar.Section></Navbar.Section> */}
+
       {session?.user ? (
         <Navbar.Section className={classes.footer}>
           <UserButton
