@@ -1,10 +1,12 @@
-import { ActionIcon, Button, Group, TextInput } from '@mantine/core';
-import React, { useEffect } from 'react';
+import { Button, Group, TextInput } from '@mantine/core';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { MdPersonSearch } from 'react-icons/md';
 import { supabase } from 'src/app/supabase/client';
 
-function JoinBox() {
+function JoinBox({ getGroups }: { getGroups: () => Promise<void> }) {
+  const navigate = useNavigate();
+
   const [text, setText] = React.useState<string>('');
   const [errorMessage, setErrorMessage] = React.useState<string>('');
 
@@ -29,17 +31,23 @@ function JoinBox() {
       <Button
         variant="outline"
         disabled={text.length !== 6}
-        onClick={async () =>
-          await supabase
-            .rpc('join_group_with_code', { invite: text })
-            .then((res) => {
-              console.log(res);
+        onClick={async () => {
+          const { data, error } = await supabase.rpc('join_group_with_code', {
+            invite: text,
+          });
 
-              if (res.error) {
-                setErrorMessage(res.error.message);
-              }
-            })
-        }
+          if (error) {
+            setErrorMessage(error.message);
+            return;
+          }
+
+          if (data) {
+            console.log(data[0]);
+            getGroups().then(() => {
+              navigate('/group/' + data[0].group_id);
+            });
+          }
+        }}
       >
         Join
       </Button>
