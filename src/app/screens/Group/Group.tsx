@@ -19,6 +19,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 // Icons
 import { RxCheck, RxClipboard } from 'react-icons/rx';
+
+// Supabase
 import { supabase } from 'src/app/supabase/client';
 
 // Types

@@ -27,5 +27,27 @@ export type ElevatedInsertUserGroup =
 export type GetGroupSize = Database['public']['Functions']['get_group_size'];
 
 // Enum Types
-export type PhobiaIntensity = Database['public']['Enums']['phobiaintensity'];
-export type TopicIntensity = Database['public']['Enums']['topicintensity'];
+// NOTE: These are hardcoded because they are not able to be pulled from the database schema (in a working way)
+export enum PhobiaIntensity {
+  Unaffected = 'Unaffected',
+  Neutral = 'Neutral',
+  Warning = 'Warning',
+  Ban = 'Ban',
+}
+
+export enum TopicIntensity {
+  Fantasy = 'Fantasy',
+  Adventure = 'Adventure',
+  Struggle = 'Struggle',
+  Tragedy = 'Tragedy',
+}
+
+export enum PhobiaCategory {
+  Physical = 'Physical',
+  Objects = 'Objects',
+  Social = 'Social',
+  Animals = 'Animals',
+  Death = 'Death',
+  Supernatural = 'Supernatural',
+  Other = 'Other',
+}
