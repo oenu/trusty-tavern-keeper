@@ -34,22 +34,59 @@ export interface Database {
   }
   public: {
     Tables: {
-      custom_phobia: {
+      content: {
+        Row: {
+          category: Database["public"]["Enums"]["contentcategory"]
+          description: string
+          id: number
+          name: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["contentcategory"]
+          description: string
+          id?: number
+          name: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["contentcategory"]
+          description?: string
+          id?: number
+          name?: string
+        }
+      }
+      content_response: {
+        Row: {
+          content_id: number
+          intensity: Database["public"]["Enums"]["contentintensity"]
+          user_id: string
+        }
+        Insert: {
+          content_id: number
+          intensity: Database["public"]["Enums"]["contentintensity"]
+          user_id: string
+        }
+        Update: {
+          content_id?: number
+          intensity?: Database["public"]["Enums"]["contentintensity"]
+          user_id?: string
+        }
+      }
+      custom_content: {
         Row: {
           description: string
-          intensity: Database["public"]["Enums"]["phobiaintensity"]
+          intensity: Database["public"]["Enums"]["contentintensity"]
           name: string
           user_id: string
         }
         Insert: {
           description: string
-          intensity: Database["public"]["Enums"]["phobiaintensity"]
+          intensity: Database["public"]["Enums"]["contentintensity"]
           name: string
           user_id: string
         }
         Update: {
           description?: string
-          intensity?: Database["public"]["Enums"]["phobiaintensity"]
+          intensity?: Database["public"]["Enums"]["contentintensity"]
           name?: string
           user_id?: string
         }
@@ -75,43 +112,6 @@ export interface Database {
           invite_code?: string
           name?: string
           owner?: string
-        }
-      }
-      phobia: {
-        Row: {
-          category: Database["public"]["Enums"]["phobiacategory"]
-          description: string
-          id: number
-          name: string
-        }
-        Insert: {
-          category: Database["public"]["Enums"]["phobiacategory"]
-          description: string
-          id?: number
-          name: string
-        }
-        Update: {
-          category?: Database["public"]["Enums"]["phobiacategory"]
-          description?: string
-          id?: number
-          name?: string
-        }
-      }
-      phobia_response: {
-        Row: {
-          intensity: Database["public"]["Enums"]["phobiaintensity"]
-          phobia_id: number
-          user_id: string
-        }
-        Insert: {
-          intensity: Database["public"]["Enums"]["phobiaintensity"]
-          phobia_id: number
-          user_id: string
-        }
-        Update: {
-          intensity?: Database["public"]["Enums"]["phobiaintensity"]
-          phobia_id?: number
-          user_id?: string
         }
       }
       topic: {
@@ -251,6 +251,15 @@ export interface Database {
       }
     }
     Enums: {
+      contentcategory:
+        | "Physical"
+        | "Objects"
+        | "Social"
+        | "Animals"
+        | "Death"
+        | "Supernatural"
+        | "Other"
+      contentintensity: "Unaffected" | "Neutral" | "Warning" | "Ban"
       phobiacategory:
         | "Physical"
         | "Objects"

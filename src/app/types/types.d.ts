@@ -25,22 +25,22 @@
 //   is_owner: boolean;
 // };
 
-// type Phobia = {
+// type Content = {
 //   // id: 1
 //   id: number;
-//   // name: "testPhobia"
+//   // name: "testContent"
 //   name: string;
 //   // description: "testDescription"
 //   description: string;
 // };
 
-// type PhobiaResponse = {
-//   // id: 1 -- Id of the phobia
+// type ContentResponse = {
+//   // id: 1 -- Id of the content
 //   id: number;
-//   // name: "testPhobia" -- Name of the phobia
+//   // name: "testContent" -- Name of the content
 //   name: string;
-//   // description: "testDescription" -- Description of the phobia
+//   // description: "testDescription" -- Description of the content
 //   description: string;
-//   // intensity: "Unaffected" -- Intensity of the phobia
-//   intensity: PhobiaIntensity;
+//   // intensity: "Unaffected" -- Intensity of the content
+//   intensity: ContentIntensity;
 // };

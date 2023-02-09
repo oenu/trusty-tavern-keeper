@@ -22,79 +22,81 @@ import { supabase } from 'src/app/supabase/client';
 
 // Types
 import {
-  Phobia,
-  PhobiaCategory,
-  PhobiaIntensity,
-  PhobiaResponse,
+  Content,
+  ContentCategory,
+  ContentIntensity,
+  ContentResponse,
 } from 'src/app/types/supabase-type-extensions';
 
-function PhobiaList() {
+function ContentList() {
   // Data states
-  const [phobias, setPhobias] = useState<Phobia[]>([]);
-  const [phobiaResponses, setPhobiaResponses] = useState<PhobiaResponse[]>([]);
+  const [contents, setContents] = useState<Content[]>([]);
+  const [contentResponses, setContentResponses] = useState<ContentResponse[]>(
+    []
+  );
 
   // Loading states
-  const [phobiaResponsesLoading, setPhobiaResponsesLoading] =
+  const [contentResponsesLoading, setContentResponsesLoading] =
     useState<boolean>(true);
-  const [phobiasLoading, setPhobiasLoading] = useState<boolean>(true);
-  const [pendingPhobiaResponses, setPendingPhobiaResponses] = useState<
+  const [contentsLoading, setContentsLoading] = useState<boolean>(true);
+  const [pendingContentResponses, setPendingContentResponses] = useState<
     number[]
   >([]);
 
   // Error states
-  const [phobiaResponsesError, setPhobiaResponsesError] = useState<
+  const [contentResponsesError, setContentResponsesError] = useState<
     string | null
   >(null);
-  const [phobiasError, setPhobiasError] = useState<string | null>(null);
+  const [contentsError, setContentsError] = useState<string | null>(null);
 
   /**
-   * fetchPhobias
-   * Fetches all phobias from the database
+   * fetchContents
+   * Fetches all contents from the database
    * @returns {Promise<void>}
    * @async
    */
 
-  // Handle Change of Phobia Response
-  const handlePhobiaResponse = async (
-    phobia_id: number,
-    intensity: PhobiaIntensity
+  // Handle Change of Content Response
+  const handleContentResponse = async (
+    content_id: number,
+    intensity: ContentIntensity
   ) => {
-    // If the phobia response is already pending, don't do anything
-    if (pendingPhobiaResponses.includes(phobia_id)) return;
+    // If the content response is already pending, don't do anything
+    if (pendingContentResponses.includes(content_id)) return;
     const user_id = (await supabase.auth.getUser()).data.user?.id;
     if (!user_id) {
       console.error('No user id, this should not happen');
       return;
     }
 
-    // Add the phobia id to the pending phobia responses
-    setPendingPhobiaResponses((prevPendingPhobiaResponses) => [
-      ...prevPendingPhobiaResponses,
-      phobia_id,
+    // Add the content id to the pending content responses
+    setPendingContentResponses((prevPendingContentResponses) => [
+      ...prevPendingContentResponses,
+      content_id,
     ]);
 
-    // Upsert the phobia response
+    // Upsert the content response
     supabase
-      .from('phobia_response')
+      .from('content_response')
       .upsert({
         user_id,
-        phobia_id,
+        content_id,
         intensity,
       })
       .select('*')
       .then(({ data, error }) => {
         if (data) {
-          console.debug('Upserted phobia response follows:');
+          console.debug('Upserted content response follows:');
           console.debug(data);
-          setPhobiaResponses((prevPhobiaResponses) => {
-            const newResponses = [...prevPhobiaResponses];
+          setContentResponses((prevContentResponses) => {
+            const newResponses = [...prevContentResponses];
             const index = newResponses.findIndex(
-              (phobiaResponse) =>
-                phobiaResponse.phobia_id === phobia_id &&
-                phobiaResponse.user_id === user_id
+              (contentResponse) =>
+                contentResponse.content_id === content_id &&
+                contentResponse.user_id === user_id
             );
 
-            // If the phobia response doesn't exist, add it
+            // If the content response doesn't exist, add it
             if (index === -1) newResponses.push(data[0]);
             // Otherwise, replace it
             else newResponses[index] = data[0];
@@ -104,72 +106,72 @@ function PhobiaList() {
           console.error(error);
         } else {
           console.error(
-            'No data or error returned from phobia response upsert'
+            'No data or error returned from content response upsert'
           );
         }
 
-        // Remove the phobia id from the pending phobia responses
-        setPendingPhobiaResponses((prevPendingPhobiaResponses) =>
-          prevPendingPhobiaResponses.filter((id) => id !== phobia_id)
+        // Remove the content id from the pending content responses
+        setPendingContentResponses((prevPendingContentResponses) =>
+          prevPendingContentResponses.filter((id) => id !== content_id)
         );
       });
   };
 
   useEffect(() => {
-    fetchPhobias()
-      .then(async (phobias: Phobia[]) => {
-        setPhobias(phobias);
-        setPhobiasLoading(false);
-        fetchPhobiaResponses(phobias.map((phobia) => phobia.id))
-          .then((phobiaResponses: PhobiaResponse[]) => {
-            setPhobiaResponses(phobiaResponses);
-            setPhobiaResponsesLoading(false);
+    fetchContents()
+      .then(async (contents: Content[]) => {
+        setContents(contents);
+        setContentsLoading(false);
+        fetchContentResponses(contents.map((content) => content.id))
+          .then((contentResponses: ContentResponse[]) => {
+            setContentResponses(contentResponses);
+            setContentResponsesLoading(false);
           })
           .catch((error) => {
-            setPhobiaResponsesError(error.message);
+            setContentResponsesError(error.message);
           });
       })
       .catch((error) => {
-        setPhobiasError(error.message);
+        setContentsError(error.message);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const phobiaCards = phobias.map((phobia) => (
-    <Card key={phobia.id}>
+  const contentCards = contents.map((content) => (
+    <Card key={content.id}>
       <Stack justify={'space-between'} style={{ height: '100%' }}>
         <Stack>
           <Group position="apart" noWrap>
-            <Title order={3}>{phobia.name}</Title>
-            {pendingPhobiaResponses.includes(phobia.id) && (
+            <Title order={3}>{content.name}</Title>
+            {pendingContentResponses.includes(content.id) && (
               <Loader size={20} color="blue" />
             )}
           </Group>
-          <Text>{phobia.description}</Text>
+          <Text>{content.description}</Text>
         </Stack>
         <Stack align={'stretch'} justify={'space-between'}>
-          <Skeleton radius="sm" visible={phobiaResponsesLoading}>
+          <Skeleton radius="sm" visible={contentResponsesLoading}>
             <SegmentedControl
               fullWidth
               transitionDuration={0}
               disabled={
-                phobiaResponsesLoading ||
-                pendingPhobiaResponses.includes(phobia.id)
+                contentResponsesLoading ||
+                pendingContentResponses.includes(content.id)
               }
               value={
-                phobiaResponses.find(
-                  (phobiaResponse) => phobiaResponse.phobia_id === phobia.id
+                contentResponses.find(
+                  (contentResponse) => contentResponse.content_id === content.id
                 )?.intensity
               }
               onChange={(value) => {
                 console.log(
-                  `Changing phobia response for ${phobia.name} to ${value}`
+                  `Changing content response for ${content.name} to ${value}`
                 );
-                handlePhobiaResponse(phobia.id, value as PhobiaIntensity);
+                handleContentResponse(content.id, value as ContentIntensity);
               }}
-              data={Object.keys(PhobiaIntensity).map((key) => ({
+              data={Object.keys(ContentIntensity).map((key) => ({
                 label: key,
-                value: PhobiaIntensity[key as keyof typeof PhobiaIntensity],
+                value: ContentIntensity[key as keyof typeof ContentIntensity],
               }))}
             />
           </Skeleton>
@@ -178,35 +180,35 @@ function PhobiaList() {
     </Card>
   ));
 
-  // Separate the phobia cards into categories
-  const phobiaCardsByCategory = phobiaCards.reduce(
-    (acc, phobiaCard) => {
-      const phobia = phobias.find(
-        (phobia) => phobia.id === parseInt(phobiaCard.key as string)
+  // Separate the content cards into categories
+  const contentCardsByCategory = contentCards.reduce(
+    (acc, contentCard) => {
+      const content = contents.find(
+        (content) => content.id === parseInt(contentCard.key as string)
       );
-      if (!phobia) {
-        console.error('Phobia not found');
+      if (!content) {
+        console.error('Content not found');
         return acc;
       }
-      const category = phobia.category;
+      const category = content.category;
       if (!acc[category]) acc[category] = [];
-      acc[category].push(phobiaCard);
+      acc[category].push(contentCard);
       return acc;
     },
     {
-      [PhobiaCategory.Physical]: [] as JSX.Element[],
-      [PhobiaCategory.Objects]: [] as JSX.Element[],
-      [PhobiaCategory.Social]: [] as JSX.Element[],
-      [PhobiaCategory.Animals]: [] as JSX.Element[],
-      [PhobiaCategory.Death]: [] as JSX.Element[],
-      [PhobiaCategory.Supernatural]: [] as JSX.Element[],
-      [PhobiaCategory.Other]: [] as JSX.Element[],
+      [ContentCategory.Physical]: [] as JSX.Element[],
+      [ContentCategory.Objects]: [] as JSX.Element[],
+      [ContentCategory.Social]: [] as JSX.Element[],
+      [ContentCategory.Animals]: [] as JSX.Element[],
+      [ContentCategory.Death]: [] as JSX.Element[],
+      [ContentCategory.Supernatural]: [] as JSX.Element[],
+      [ContentCategory.Other]: [] as JSX.Element[],
     }
   );
 
   return (
     <>
-      <Title mb={'md'}>User Phobia List</Title>
+      <Title mb={'md'}>User Content List</Title>
       <Card mb={'md'}>
         <Text>
           Some content can be upsetting or triggering for people, on this page
@@ -289,15 +291,15 @@ function PhobiaList() {
           </Text>
         </Alert>
       </Card>
-      {phobiasLoading ? (
+      {contentsLoading ? (
         <Loader size={20} color="blue" />
-      ) : phobiasError || phobiaResponsesError ? (
+      ) : contentsError || contentResponsesError ? (
         <Alert title="Something went wrong" color={'red'}>
-          {phobiasError || phobiaResponsesError}
-          {phobiasError && phobiaResponsesError && <br />}
+          {contentsError || contentResponsesError}
+          {contentsError && contentResponsesError && <br />}
         </Alert>
-      ) : phobias.length === 0 ? (
-        <Alert title="No phobias found" color={'red'}>
+      ) : contents.length === 0 ? (
+        <Alert title="No contents found" color={'red'}>
           This should not happen, please contact the site administrator.
         </Alert>
       ) : (
@@ -310,7 +312,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Physical]}
+            {contentCardsByCategory[ContentCategory.Physical]}
           </SimpleGrid>
           <Title mt={'lg'}>Social Interaction / People</Title>
           <Divider mb={'sm'} />
@@ -320,7 +322,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Objects]}
+            {contentCardsByCategory[ContentCategory.Social]}
           </SimpleGrid>
           <Title mt={'lg'}>Objects</Title>
           <Divider mb={'sm'} />
@@ -330,7 +332,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Social]}
+            {contentCardsByCategory[ContentCategory.Objects]}
           </SimpleGrid>
           <Title mt={'lg'}>Animals</Title>
           <Divider mb={'sm'} />
@@ -340,7 +342,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Animals]}
+            {contentCardsByCategory[ContentCategory.Animals]}
           </SimpleGrid>
           <Title mt={'lg'}>Death / Injury</Title>
           <Divider mb={'sm'} />
@@ -350,7 +352,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Death]}
+            {contentCardsByCategory[ContentCategory.Death]}
           </SimpleGrid>
           <Title mt={'lg'}>Supernatural</Title>
           <Divider mb={'sm'} />
@@ -360,7 +362,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Supernatural]}
+            {contentCardsByCategory[ContentCategory.Supernatural]}
           </SimpleGrid>
           <Title mt={'lg'}>Other</Title>
           <Divider mb={'sm'} />
@@ -370,7 +372,7 @@ function PhobiaList() {
               { minWidth: 'lg', cols: 3 },
             ]}
           >
-            {phobiaCardsByCategory[PhobiaCategory.Other]}
+            {contentCardsByCategory[ContentCategory.Other]}
           </SimpleGrid>
         </>
       )}
@@ -378,40 +380,42 @@ function PhobiaList() {
   );
 }
 
-export default PhobiaList;
+export default ContentList;
 
-const fetchPhobias = async (): Promise<Phobia[]> => {
+const fetchContents = async (): Promise<Content[]> => {
   return supabase
-    .from('phobia')
+    .from('content')
     .select('*')
     .then(({ data, error }) => {
       if (data) {
-        console.debug('Fetched phobias' + data);
+        console.debug('Fetched contents' + data);
         return data;
       } else if (error) {
         console.error(error);
         throw error;
       } else {
-        throw new Error('No data or error returned from phobia fetch');
+        throw new Error('No data or error returned from content fetch');
       }
     });
 };
 
-const fetchPhobiaResponses = async (
-  phobiaIds: number[]
-): Promise<PhobiaResponse[]> => {
+const fetchContentResponses = async (
+  contentIds: number[]
+): Promise<ContentResponse[]> => {
   return supabase
-    .from('phobia_response')
+    .from('content_response')
     .select('*')
-    .in('phobia_id', phobiaIds)
+    .in('content_id', contentIds)
     .then(({ data, error }) => {
       if (data) {
-        console.debug('Fetched phobia responses' + data);
+        console.debug('Fetched content responses' + data);
         return data;
       } else if (error) {
         throw error;
       } else {
-        throw new Error('No data or error returned from phobia response fetch');
+        throw new Error(
+          'No data or error returned from content response fetch'
+        );
       }
     });
 };

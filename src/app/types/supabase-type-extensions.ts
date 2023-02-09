@@ -6,9 +6,9 @@ export type User = Database['public']['Tables']['user']['Row'];
 export type UserGroup = Database['public']['Tables']['user_group']['Row'];
 export type Group = Database['public']['Tables']['group']['Row'];
 
-export type Phobia = Database['public']['Tables']['phobia']['Row'];
-export type PhobiaResponse =
-  Database['public']['Tables']['phobia_response']['Row'];
+export type Content = Database['public']['Tables']['content']['Row'];
+export type ContentResponse =
+  Database['public']['Tables']['content_response']['Row'];
 
 export type Topic = Database['public']['Tables']['topic']['Row'];
 export type TopicResponse =
@@ -28,7 +28,7 @@ export type GetGroupSize = Database['public']['Functions']['get_group_size'];
 
 // Enum Types
 // NOTE: These are hardcoded because they are not able to be pulled from the database schema (in a working way)
-export enum PhobiaIntensity {
+export enum ContentIntensity {
   Unaffected = 'Unaffected',
   Neutral = 'Neutral',
   Warning = 'Warning',
@@ -42,7 +42,7 @@ export enum TopicIntensity {
   Tragedy = 'Tragedy',
 }
 
-export enum PhobiaCategory {
+export enum ContentCategory {
   Physical = 'Physical',
   Objects = 'Objects',
   Social = 'Social',

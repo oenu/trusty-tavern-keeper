@@ -19,7 +19,7 @@ import { SessionContext } from 'src/app/app';
 import { GroupContext } from 'src/app/app';
 
 import JoinBox from '../JoinBox/JoinBox';
-import PhobiaList from 'src/app/screens/Phobias/PhobiaList';
+import ContentList from 'src/app/screens/Contents/ContentList';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');
@@ -144,13 +144,13 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
       <Navbar.Section mb={'md'}>
         <NavLink
           className={cx(classes.link, {
-            [classes.linkActive]: location.pathname.includes(`/phobias`),
+            [classes.linkActive]: location.pathname.includes(`/contents`),
           })}
-          to="/phobias"
-          key="phobias"
+          to="/contents"
+          key="contents"
           onClick={getGroups}
         >
-          <Group style={{ fontWeight: 700 }}>Phobias</Group>
+          <Group style={{ fontWeight: 700 }}>Contents</Group>
         </NavLink>
       </Navbar.Section>
       <Navbar.Section mb={'md'}>

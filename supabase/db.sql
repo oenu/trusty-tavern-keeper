@@ -4,15 +4,17 @@
 DROP TABLE IF EXISTS public.user cascade;
 DROP TABLE IF EXISTS public.group cascade;
 DROP TABLE IF EXISTS public.user_group cascade;
-DROP TABLE IF EXISTS public.phobia cascade;
-DROP TABLE IF EXISTS public.custom_phobia cascade;
-DROP TABLE IF EXISTS public.phobia_response cascade;
+DROP TABLE IF EXISTS public.content cascade;
+DROP TABLE IF EXISTS public.custom_content cascade;
+DROP TABLE IF EXISTS public.content_response cascade;
 DROP TABLE IF EXISTS public.topic cascade;
 DROP TABLE IF EXISTS public.topic_response cascade;
 
+
 -- Drop all enums
-DROP TYPE IF EXISTS PhobiaIntensity cascade;
+DROP TYPE IF EXISTS ContentIntensity cascade;
 DROP TYPE IF EXISTS TopicIntensity cascade;
+DROP TYPE IF EXISTS ContentCategory cascade;
 
 -- Drop all functions
 DROP FUNCTION IF EXISTS public.handle_new_user cascade;
@@ -37,9 +39,9 @@ DELETE FROM auth.users;
 -- ====================== INIT DATABASE ======================
 
 -- ENUMS
-CREATE TYPE PhobiaIntensity AS ENUM ('Unaffected', 'Neutral', 'Warning', 'Ban');
+CREATE TYPE ContentIntensity AS ENUM ('Unaffected', 'Neutral', 'Warning', 'Ban');
 CREATE TYPE TopicIntensity AS ENUM ('Fantasy', 'Adventure', 'Struggle', 'Tragedy');
-CREATE TYPE PhobiaCategory AS ENUM  (
+CREATE TYPE ContentCategory AS ENUM  (
   'Physical',
   'Objects',
   'Social',
@@ -128,7 +130,7 @@ VALUES (
 - Stores the group's owner
 
 Groups are created by a user (owner) and can be joined by other users (members). They have a maximum intensity level that is set by the owner when the group is created.
-Users will answer questions about their phobias and topics. The answers will be used to determine the intensity of the group / which specific phobias and topics are allowed in the group. (Fetched via sql queries)
+Users will answer questions about their contents and topics. The answers will be used to determine the intensity of the group / which specific contents and topics are allowed in the group. (Fetched via sql queries)
 */
 
 CREATE TABLE public.group (
@@ -429,29 +431,29 @@ INSERT INTO public.user_group (user_id, group_id) VALUES ('00000000-0000-0000-00
 
 
 -- #endregion
--- ====================== PHOBIAS ======================
--- #region Phobias
-/* phobia table
-- Stores the phobia's name
-- Stores the phobia's description
+-- ====================== CONTENT ======================
+-- #region Contents
+/* content table
+- Stores the content's name
+- Stores the content's description
 
-This table will be used to store the phobias that users can choose from when answering questions about their phobias, a seperate table contains the responses to these questions (phobia_response).
+This table will be used to store the contents that users can choose from when answering questions about their contents, a seperate table contains the responses to these questions (content_response).
 */
 
 
 
 
-CREATE TABLE public.phobia (
+CREATE TABLE public.content (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    category PhobiaCategory NOT NULL,
+    category ContentCategory NOT NULL,
     description TEXT NOT NULL
 );
 
-ALTER TABLE public.phobia ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Phobias are viewable by all users."
-ON "phobia" FOR SELECT
+CREATE POLICY "Contents are viewable by all users."
+ON "content" FOR SELECT
 USING ( true );
 
 
@@ -459,7 +461,7 @@ USING ( true );
 
 
 
--- Seed data for the phobia table 
+-- Seed data for the content table 
 -- name: The name of an upsetting item/behavior/topic/thing
 -- description: A description of how the item might occurr in a game of dungeons and dragons
 
@@ -467,152 +469,152 @@ USING ( true );
 --   'Physical','Objects','Social','Animals','Death','Supernatural','Other'
 
 -- Physical Sensation / Body
-INSERT INTO public.phobia (name, description, category) VALUES ('Heights', 'Being in a high place, or looking down from a high place.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Imprisonment', 'Being trapped, or being unable to escape.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Water', 'Water, oceans, lakes, and other bodies of water.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Drowning', 'Being trapped underwater, or being unable to breathe.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Fire', 'Fire, flames, and other things that burn.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Darkness', 'Darkness, shadows, and other things that are hard to see in.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Gore', 'Depictions of blood, guts, or other body parts.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Disfigurement', 'Depictions of disfigurement, such as burns, scars, or amputations.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Diseases', 'Depictions of diseases, plagues, or other illnesses.', 'Physical');
-INSERT INTO public.phobia (name, description, category) VALUES ('Body Modification', 'Depictions of body modification, such as tattoos or piercings.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Heights', 'Being in a high place, or looking down from a high place.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Imprisonment', 'Being trapped, or being unable to escape.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Water', 'Water, oceans, lakes, and other bodies of water.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Drowning', 'Being trapped underwater, or being unable to breathe.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Fire', 'Fire, flames, and other things that burn.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Darkness', 'Darkness, shadows, and other things that are hard to see in.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Gore', 'Depictions of blood, guts, or other body parts.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Disfigurement', 'Depictions of disfigurement, such as burns, scars, or amputations.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Diseases', 'Depictions of diseases, plagues, or other illnesses.', 'Physical');
+INSERT INTO public.content (name, description, category) VALUES ('Body Modification', 'Depictions of body modification, such as tattoos or piercings.', 'Physical');
 
 
 -- Objects
-INSERT INTO public.phobia (name, description, category) VALUES ('Needles', 'Either hollow or solid needles, commonly found in medical settings or in textile crafts.','Objects');
-INSERT INTO public.phobia (name, description, category) VALUES ('Alcohol', 'Alcohol, such as beer, wine, or liquor.','Objects');
-INSERT INTO public.phobia (name, description, category) VALUES ('Drugs', 'Drugs, such as marijuana, cocaine, or heroin.','Objects');
-INSERT INTO public.phobia (name, description, category) VALUES ('Guns', 'Guns, such as pistols, rifles, or shotguns.','Objects');
-INSERT INTO public.phobia (name, description, category) VALUES ('Knives', 'Knives, such as kitchen knives, pocket knives, or swords.','Objects');
+INSERT INTO public.content (name, description, category) VALUES ('Needles', 'Either hollow or solid needles, commonly found in medical settings or in textile crafts.','Objects');
+INSERT INTO public.content (name, description, category) VALUES ('Alcohol', 'Alcohol, such as beer, wine, or liquor.','Objects');
+INSERT INTO public.content (name, description, category) VALUES ('Drugs', 'Drugs, such as marijuana, cocaine, or heroin.','Objects');
+INSERT INTO public.content (name, description, category) VALUES ('Guns', 'Guns, such as pistols, rifles, or shotguns.','Objects');
+INSERT INTO public.content (name, description, category) VALUES ('Knives', 'Knives, such as kitchen knives, pocket knives, or swords.','Objects');
 
 
 -- Social Interaction / People
-INSERT INTO public.phobia (name, description, category) VALUES ('Sexism', 'Being treated differently because of your gender.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Homophobia', 'Being treated differently because of your sexual orientation.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Racism', 'Being treated differently because of your race.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Ageism', 'Being treated differently because of your age.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Transphobia', 'Being treated differently because of your gender identity.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Abandonment', 'Being left alone, or being unable to find help.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Dentists', 'Dentists, dental hygienists, and other people who work in a dental office.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Clowns', 'Clowns, circus performers, often with exaggerated features.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Evil Races', 'Depictions of a specific group of people, such as goblins or orcs as being inherently evil.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Kidnapping', 'Being taken against your will, or being unable to escape.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Sexual Assault', 'Depictions of sexual violence, such as rape or molestation.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Incest', 'Sexual activity or intimate relationships between close family members.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Domestic Violence', 'Depictions of violence in the home, or violence against a spouse or partner.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Violence Against Children', 'Depictions of violence or abuse towards children.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Slavery / Forced Labor', 'Being forced to work, or being forced to do something against your will.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Human Trafficking', 'Being forced to work, or being forced to do something against your will.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Collonialism', 'The exploitation of a country or people through political, economic, cultural or militarisic means.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Religious Persecution', 'The act of singling out or punishing individuals or communities based on their religious beliefs or practices.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Religious Extremism', 'The belief in and promotion of radical or fanatical interpretations of religion, often resulting in acts of violence or terrorism.', 'Social');
-INSERT INTO public.phobia (name, description, category) VALUES ('Political Violence', 'The use of physical force or aggression in furtherance of political aims, including acts of terrorism, insurgency, civil unrest, or state-sponsored violence.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Sexism', 'Being treated differently because of your gender.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Homophobia', 'Being treated differently because of your sexual orientation.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Racism', 'Being treated differently because of your race.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Ageism', 'Being treated differently because of your age.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Transphobia', 'Being treated differently because of your gender identity.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Abandonment', 'Being left alone, or being unable to find help.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Dentists', 'Dentists, dental hygienists, and other people who work in a dental office.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Clowns', 'Clowns, circus performers, often with exaggerated features.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Evil Races', 'Depictions of a specific group of people, such as goblins or orcs as being inherently evil.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Kidnapping', 'Being taken against your will, or being unable to escape.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Sexual Assault', 'Depictions of sexual violence, such as rape or molestation.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Incest', 'Sexual activity or intimate relationships between close family members.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Domestic Violence', 'Depictions of violence in the home, or violence against a spouse or partner.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Violence Against Children', 'Depictions of violence or abuse towards children.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Slavery / Forced Labor', 'Being forced to work, or being forced to do something against your will.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Human Trafficking', 'Being forced to work, or being forced to do something against your will.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Collonialism', 'The exploitation of a country or people through political, economic, cultural or militarisic means.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Religious Persecution', 'The act of singling out or punishing individuals or communities based on their religious beliefs or practices.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Religious Extremism', 'The belief in and promotion of radical or fanatical interpretations of religion, often resulting in acts of violence or terrorism.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Political Violence', 'The use of physical force or aggression in furtherance of political aims, including acts of terrorism, insurgency, civil unrest, or state-sponsored violence.', 'Social');
 
 
 -- Animals
-INSERT INTO public.phobia (name, description, category) VALUES ('Violence against animals', 'Hunting, butchery or other depictions of violence.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Insects', 'Insects, flies, maggots or other small creatures with many legs.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Spiders', 'Spiders, arachnids, and other arachnid-like creatures.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Snakes', 'Snakes, serpents, and other reptiles with long bodies and no legs.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Rats', 'Rats, mice, and other rodents.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Bats', 'Bats, flying foxes, and other flying mammals.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Dogs', 'Dogs, wolves, coyotes, and other canines.', 'Animals');
-INSERT INTO public.phobia (name, description, category) VALUES ('Cats', 'Cats, lions, tigers, and other felines.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Violence against animals', 'Hunting, butchery or other depictions of violence.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Insects', 'Insects, flies, maggots or other small creatures with many legs.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Spiders', 'Spiders, arachnids, and other arachnid-like creatures.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Snakes', 'Snakes, serpents, and other reptiles with long bodies and no legs.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Rats', 'Rats, mice, and other rodents.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Bats', 'Bats, flying foxes, and other flying mammals.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Dogs', 'Dogs, wolves, coyotes, and other canines.', 'Animals');
+INSERT INTO public.content (name, description, category) VALUES ('Cats', 'Cats, lions, tigers, and other felines.', 'Animals');
 
 -- Death
-INSERT INTO public.phobia (name, description, category) VALUES ('Death', 'Death, dying, and other things related to the end of life.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Funerals', 'Funerals, wakes, and other ceremonies related to death.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Cemeteries', 'Cemeteries, graveyards, and other places where the dead are buried.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Grave robbing', 'Grave robbing, tomb raiding, and other things related to stealing from the dead.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Skeletons', 'Skeletons, bones, and other things related to the dead.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Suicide', 'The act of taking ones own life, or thoughts and discussions about suicide.','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Genocide', 'The deliberate and systematic destruction of a racial, ethnic, or religious group','Death');
-INSERT INTO public.phobia (name, description, category) VALUES ('Familial Death', 'The death of family members or close relatives','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Death', 'Death, dying, and other things related to the end of life.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Funerals', 'Funerals, wakes, and other ceremonies related to death.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Cemeteries', 'Cemeteries, graveyards, and other places where the dead are buried.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Grave robbing', 'Grave robbing, tomb raiding, and other things related to stealing from the dead.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Skeletons', 'Skeletons, bones, and other things related to the dead.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Suicide', 'The act of taking ones own life, or thoughts and discussions about suicide.','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Genocide', 'The deliberate and systematic destruction of a racial, ethnic, or religious group','Death');
+INSERT INTO public.content (name, description, category) VALUES ('Familial Death', 'The death of family members or close relatives','Death');
 
 
 -- Supernatural
-INSERT INTO public.phobia (name, description, category) VALUES ('The Afterlife', 'Heaven, hell, and other beliefs about what happens after death.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Possesion', 'Possession, being taken over by an evil entity, and other related topics.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Ghosts', 'Ghosts, specters, spirits, and other representations of the dead.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Mummies', 'Mummies, mummification, and other things related to the dead.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Zombies', 'Zombies, ghouls, and other undead creatures.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Vampires', 'Vampires, bloodsuckers, and other creatures that feed on blood.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Werewolves', 'Werewolves, lycanthropes, and other creatures that transform into wolves.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Demons', 'Demons, devils, and other creatures that are evil and/or from hell.','Supernatural');
-INSERT INTO public.phobia (name, description, category) VALUES ('Blood', 'Depictions of blood, or the act of bleeding often from combat or surgery.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('The Afterlife', 'Heaven, hell, and other beliefs about what happens after death.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Possesion', 'Possession, being taken over by an evil entity, and other related topics.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Ghosts', 'Ghosts, specters, spirits, and other representations of the dead.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Mummies', 'Mummies, mummification, and other things related to the dead.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Zombies', 'Zombies, ghouls, and other undead creatures.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Vampires', 'Vampires, bloodsuckers, and other creatures that feed on blood.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Werewolves', 'Werewolves, lycanthropes, and other creatures that transform into wolves.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Demons', 'Demons, devils, and other creatures that are evil and/or from hell.','Supernatural');
+INSERT INTO public.content (name, description, category) VALUES ('Blood', 'Depictions of blood, or the act of bleeding often from combat or surgery.','Supernatural');
 
 
 -- Other
-INSERT INTO public.phobia (name, description, category) VALUES ('Natural Disasters', 'Depictions of natural disasters, such as tsunamis, earthquakes, or volcanoes.','Other');
+INSERT INTO public.content (name, description, category) VALUES ('Natural Disasters', 'Depictions of natural disasters, such as tsunamis, earthquakes, or volcanoes.','Other');
 
 
 
-/* custom_phobia table
+/* custom_content table
 - Stores the user's id
-- Stores the phobia's name
-- Stores the phobia's description
-- Stores the phobia's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
+- Stores the content's name
+- Stores the content's description
+- Stores the content's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
 
-This table will be used to store the phobias that users create themselves
+This table will be used to store the contents that users create themselves
 */
 
-CREATE TABLE public.custom_phobia (
+CREATE TABLE public.custom_content (
     user_id uuid REFERENCES public.user ON DELETE CASCADE NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    intensity PhobiaIntensity NOT NULL,
+    intensity ContentIntensity NOT NULL,
     PRIMARY KEY (user_id, name)
 );
 
-ALTER TABLE public.custom_phobia ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.custom_content ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Custom phobias are viewable by users who created them."
-ON "custom_phobia" FOR SELECT
+CREATE POLICY "Custom contents are viewable by users who created them."
+ON "custom_content" FOR SELECT
 USING ( auth.uid() = user_id );
 
-CREATE POLICY "Custom phobias are editable by users who created them."
-ON "custom_phobia" FOR UPDATE
+CREATE POLICY "Custom contents are editable by users who created them."
+ON "custom_content" FOR UPDATE
 USING ( auth.uid() = user_id );
 
-CREATE POLICY "Custom phobias are deletable by users who created them."
-ON "custom_phobia" FOR DELETE
+CREATE POLICY "Custom contents are deletable by users who created them."
+ON "custom_content" FOR DELETE
 USING ( auth.uid() = user_id );
 
 
 
-/* phobia_response table
+/* content_response table
 - Stores the user's id
-- Stores the phobia's id
-- Stores the phobia's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
+- Stores the content's id
+- Stores the content's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
 
-This table will be used to store the responses to the questions about the user's phobias.
-Phobia responses are used across multiple groups (unlike topics), so they are stored in a seperate table.
+This table will be used to store the responses to the questions about the user's contents.
+Content responses are used across multiple groups (unlike topics), so they are stored in a seperate table.
 */
 
-CREATE TABLE public.phobia_response (
+CREATE TABLE public.content_response (
     user_id uuid REFERENCES public.user ON DELETE CASCADE NOT NULL,
-    phobia_id INTEGER REFERENCES public.phobia ON DELETE CASCADE NOT NULL,
-    intensity PhobiaIntensity NOT NULL,
-    PRIMARY KEY (user_id, phobia_id)
+    content_id INTEGER REFERENCES public.content ON DELETE CASCADE NOT NULL,
+    intensity ContentIntensity NOT NULL,
+    PRIMARY KEY (user_id, content_id)
 );
 
-ALTER TABLE public.phobia_response ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content_response ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Phobia responses are viewable by users who created them."
-ON "phobia_response" FOR SELECT
+CREATE POLICY "Content responses are viewable by users who created them."
+ON "content_response" FOR SELECT
 USING ( auth.uid() = user_id );
 
-CREATE POLICY "Phobia responses can be updated by users who created them."
-ON "phobia_response" FOR UPDATE
+CREATE POLICY "Content responses can be updated by users who created them."
+ON "content_response" FOR UPDATE
 USING ( auth.uid() = user_id );
 
-CREATE POLICY "Phobia responses can be deleted by users who created them."
-ON "phobia_response" FOR DELETE
+CREATE POLICY "Content responses can be deleted by users who created them."
+ON "content_response" FOR DELETE
 USING ( auth.uid() = user_id );
 
-CREATE POLICY "Phobia responses can be inserted by users who created them."
-ON "phobia_response" FOR INSERT WITH CHECK ( auth.uid() = user_id );
+CREATE POLICY "Content responses can be inserted by users who created them."
+ON "content_response" FOR INSERT WITH CHECK ( auth.uid() = user_id );
 
 -- #endregion
 -- ====================== TOPICS ======================

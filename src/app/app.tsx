@@ -8,6 +8,7 @@ import { createContext, useEffect, useState } from 'react';
 import { AppNavbar } from 'src/app/features/nav/AppNavbar/AppNavbar';
 import { supabase } from 'src/app/supabase/client';
 import Router from './Router';
+import { Group } from './types/supabase-type-extensions';
 
 const StyledApp = styled.div`
   // Your style here
