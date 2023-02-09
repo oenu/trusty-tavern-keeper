@@ -24,3 +24,23 @@ type GroupMember = {
   // owner: false
   is_owner: boolean;
 };
+
+type Phobia = {
+  // id: 1
+  id: number;
+  // name: "testPhobia"
+  name: string;
+  // description: "testDescription"
+  description: string;
+};
+
+type PhobiaResponse = {
+  // id: 1 -- Id of the phobia
+  id: number;
+  // name: "testPhobia" -- Name of the phobia
+  name: string;
+  // description: "testDescription" -- Description of the phobia
+  description: string;
+  // intensity: "Unaffected" -- Intensity of the phobia
+  intensity: PhobiaIntensity;
+};

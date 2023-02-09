@@ -12,6 +12,7 @@ import Debug from './screens/Debug/Debug';
 
 // Types
 import { Session } from '@supabase/supabase-js';
+import PhobiaList from './screens/Phobias/PhobiaList';
 
 function Router({
   session,
@@ -28,6 +29,7 @@ function Router({
         path="/group/:group_id"
         element={<Group getGroups={getGroups} />}
       />
+      <Route path="/phobias" element={<PhobiaList />} />
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
       <Route path="/debug" element={<Debug session={session} />} />
       <Route path="/profile" element={<Profile />} />
