@@ -1,13 +1,10 @@
 import { Card, Group, SegmentedControl, Stack, Title } from '@mantine/core';
-import { PostgrestError } from '@supabase/supabase-js';
-import { useContext, useEffect, useState } from 'react';
-import { SessionContext } from 'src/app/app';
+import { useEffect, useState } from 'react';
 import { supabase } from 'src/app/supabase/client';
 import { PhobiaIntensity } from 'src/app/types/enums';
+import { Phobia, PhobiaResponse } from 'src/app/types/supabase-type-extensions';
 
 function PhobiaList() {
-  const session = useContext(SessionContext);
-
   // Data states
   const [phobias, setPhobias] = useState<Phobia[]>([]);
   const [phobiaResponses, setPhobiaResponses] = useState<PhobiaResponse[]>([]);
@@ -29,20 +26,21 @@ function PhobiaList() {
    * ```
    */
   const fetchPhobias = async () => {
-    const { data, error } = (await supabase.from('phobia').select('*')) as {
-      data: Phobia[] | null;
-      error: PostgrestError | null;
-    };
-    if (error) {
-      console.error(error);
-      setPhobiasError(error.message);
-    }
-    if (data) {
-      console.log('Fetched phobias');
-      console.log(data);
-      setPhobias(data);
-      setPhobiasLoading(false);
-    }
+    supabase
+      .from('phobia')
+      .select('*')
+      .then(({ data, error }) => {
+        if (data) {
+          console.log('Fetched phobias' + data);
+          setPhobias(data);
+          setPhobiasLoading(false);
+        } else if (error) {
+          setPhobiasError(error.message);
+          console.error(error);
+        } else {
+          console.error('No data or error returned from phobia fetch');
+        }
+      });
   };
 
   /** Phobia responses are stored on the phobia_response table
@@ -51,24 +49,22 @@ function PhobiaList() {
    * ```
    */
   const fetchPhobiaResponses = async (phobiaIds: number[]) => {
-    const { data, error } = (await supabase
+    supabase
       .from('phobia_response')
       .select('*')
-      .in('phobia_id', phobiaIds)) as {
-      data: PhobiaResponse[] | null;
-      error: PostgrestError | null;
-    };
-
-    if (error) {
-      setPhobiaResponsesError(error.message);
-      console.error(error);
-    }
-    if (data) {
-      console.log('Fetched phobia responses');
-      console.log(data);
-      setPhobiaResponses(data);
-    }
-    setPhobiaResponsesLoading(false);
+      .in('phobia_id', phobiaIds)
+      .then(({ data, error }) => {
+        if (data) {
+          console.log('Fetched phobia responses' + data);
+          setPhobiaResponses(data);
+          setPhobiaResponsesLoading(false);
+        } else if (error) {
+          setPhobiaResponsesError(error.message);
+          console.error(error);
+        } else {
+          console.error('No data or error returned from phobia response fetch');
+        }
+      });
   };
 
   // Handle Change of Phobia Response
@@ -76,14 +72,17 @@ function PhobiaList() {
     phobia_id: number,
     intensity: PhobiaIntensity
   ) => {
-    const { data, error } = (await supabase.from('phobia_response').upsert({
-      user_id: session?.user?.id,
+    const user_id = (await supabase.auth.getUser()).data.user?.id;
+    if (!user_id) {
+      console.error('No user id, this should not happen');
+      return;
+    }
+
+    const { data, error } = await supabase.from('phobia_response').upsert({
+      user_id,
       phobia_id,
       intensity,
-    })) as {
-      data: PhobiaResponse[] | null;
-      error: PostgrestError | null;
-    };
+    });
 
     if (error) {
       console.error(error);
@@ -113,7 +112,7 @@ function PhobiaList() {
           <SegmentedControl
             value={
               phobiaResponses.find(
-                (phobiaResponse) => phobiaResponse.id === phobia.id
+                (phobiaResponse) => phobiaResponse.phobia_id === phobia.id
               )?.intensity
             }
             onChange={(value) => console.log(value)}

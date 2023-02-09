@@ -1,3 +1,4 @@
+import { Database } from './../types/supabase-types';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://kgmjeynliwbxluitaeys.supabase.co';
@@ -8,4 +9,4 @@ if (!supabaseKey) {
   throw new Error('Missing Supabase key');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
