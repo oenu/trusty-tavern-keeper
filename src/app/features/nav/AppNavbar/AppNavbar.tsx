@@ -19,7 +19,7 @@ import { SessionContext } from 'src/app/app';
 import { GroupContext } from 'src/app/app';
 
 import JoinBox from '../JoinBox/JoinBox';
-import ContentList from 'src/app/screens/Contents/ContentList';
+import ContentList from 'src/app/screens/main/Contents/ContentList';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');

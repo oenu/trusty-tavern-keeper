@@ -2,17 +2,17 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 // Screens
-import Home from './screens/Home/Home';
-import Survey from './screens/Survey/Survey';
-import Login from './screens/Login/Login';
-import Group from './screens/Group/Group';
-import CreateGroup from './screens/CreateGroup/CreateGroup';
-import Profile from './screens/Profile/Profile';
-import Debug from './screens/Debug/Debug';
+import Home from './screens/main/Home/Home';
+import Survey from './screens/main/Survey/Survey';
+import Login from './screens/main/Login/Login';
+import Group from './screens/main/Group/Group';
+import CreateGroup from './screens/main/Group/CreateGroup';
+import Profile from './screens/main/Profile/Profile';
+import Debug from './screens/misc/Debug/Debug';
 
 // Types
 import { Session } from '@supabase/supabase-js';
-import ContentList from './screens/Contents/ContentList';
+import ContentList from './screens/main/Contents/ContentList';
 
 function Router({
   session,
