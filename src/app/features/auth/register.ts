@@ -28,7 +28,7 @@ export const handleRegister = async ({
     .select();
 
   if (nameResponse.error) {
-    console.error('handleRegister: Error creating phobia', nameResponse.error);
+    console.error('handleRegister: Error creating content', nameResponse.error);
     return;
   }
 

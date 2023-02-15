@@ -4,6 +4,10 @@
   "sourceRoot": "./src",
   "projectType": "application",
   "targets": {
+    "update-types": {
+      "command": "supabase gen types typescript --linked > src/app/types/supabase-types.ts"
+    },
+
     "build": {
       "executor": "@nrwl/vite:build",
       "outputs": ["{options.outputPath}"],

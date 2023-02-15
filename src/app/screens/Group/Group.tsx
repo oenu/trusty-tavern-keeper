@@ -1,3 +1,4 @@
+// Components
 import {
   ActionIcon,
   Button,
@@ -10,11 +11,29 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { RxCheck, RxClipboard } from 'react-icons/rx';
-import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from 'src/app/supabase/client';
 import MemberPreview from './MemberPreview';
+
+// Hooks
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+// Icons
+import { RxCheck, RxClipboard } from 'react-icons/rx';
+
+// Supabase
+import { supabase } from 'src/app/supabase/client';
+
+// Types
+import {
+  Group as GroupType,
+  User,
+} from 'src/app/types/supabase-type-extensions';
+
+// Local Types
+export type GroupMember = Pick<
+  User,
+  'full_name' | 'name' | 'profile_picture' | 'discord_id'
+> & { is_owner: boolean };
 
 // Takes group from url params and fetches group data
 function Group({ getGroups }: { getGroups: () => Promise<void> }) {
@@ -22,7 +41,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   const { group_id } = useParams();
 
   // Set up state
-  const [group, setGroup] = useState<Group | null>(null);
+  const [group, setGroup] = useState<GroupType | null>(null);
   const [members, setMembers] = useState<GroupMember[] | null>(null);
   const [groupError, setGroupError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,15 +50,12 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   const navigate = useNavigate();
 
   const fetchMembers = async (): Promise<GroupMember[] | null> => {
+    if (group_id === undefined) throw new Error('No group id provided');
     const { data, error } = await supabase.rpc('get_group_users', {
-      req_id: group_id,
+      req_id: parseInt(group_id),
     });
-    if (data) {
-      return data;
-    } else {
-      console.log(error);
-      throw new Error('Could not fetch members');
-    }
+    if (data) return data;
+    else throw new Error('Could not fetch members' + error?.message);
   };
 
   const fetchGroup = async () => {
@@ -95,8 +111,10 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
           <MantineGroup>
             <Button
               onClick={async () => {
+                if (group_id === undefined)
+                  throw new Error('No group id provided');
                 const { data, error } = await supabase.rpc('leave_group', {
-                  req_id: group_id,
+                  req_id: parseInt(group_id),
                 });
                 if (error) {
                   console.log(error);
@@ -137,8 +155,9 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
 
         <Button
           onClick={async () => {
+            if (group_id === undefined) throw new Error('No group id provided');
             const { data, error } = await supabase.rpc('get_group_users', {
-              req_id: group_id,
+              req_id: parseInt(group_id),
             });
             if (error) console.log(error);
             if (data) console.log(data);

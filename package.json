@@ -19,7 +19,7 @@
     "@mantine/nprogress": "^5.10.1",
     "@reduxjs/toolkit": "^1.9.1",
     "@supabase/auth-ui-react": "^0.2.6",
-    "@supabase/supabase-js": "^2.4.1",
+    "@supabase/supabase-js": "^2.7.1",
     "discord-api-types": "^0.37.29",
     "embla-carousel-react": "^7.0.9",
     "ky": "^0.33.2",

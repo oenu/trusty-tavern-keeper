@@ -1,6 +1,10 @@
+// Components
 import { Button } from '@mantine/core';
-import React from 'react';
+
+// Hooks
 import { useNavigate } from 'react-router-dom';
+
+// Supabase
 import { supabase } from 'src/app/supabase/client';
 
 function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {

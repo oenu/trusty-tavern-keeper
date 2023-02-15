@@ -1,3 +1,4 @@
+// Components
 import {
   Text,
   Stack,
@@ -6,9 +7,16 @@ import {
   Divider,
   Group,
 } from '@mantine/core';
+
+// Hooks
 import { useHover } from '@mantine/hooks';
+
+// Icons
 import { RxCheck } from 'react-icons/rx';
 import { SiDiscord } from 'react-icons/si';
+
+// Types
+import { GroupMember } from './Group';
 
 export default function MemberPreview(member: GroupMember) {
   const { hovered, ref } = useHover();
