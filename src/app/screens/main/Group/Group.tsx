@@ -6,6 +6,7 @@ import {
   CopyButton,
   Divider,
   Group as MantineGroup,
+  Paper,
   Stack,
   Text,
   Title,
@@ -15,7 +16,7 @@ import MemberPreview from './MemberPreview';
 
 // Hooks
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 
 // Icons
 import { RxCheck, RxClipboard } from 'react-icons/rx';
@@ -106,80 +107,82 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   } else {
     return (
       <Stack>
-        <MantineGroup position={'apart'}>
-          <Title>{group?.name}</Title>
-          <MantineGroup>
-            <Button
-              onClick={async () => {
-                if (group_id === undefined)
-                  throw new Error('No group id provided');
-                const { data, error } = await supabase.rpc('leave_group', {
-                  req_id: parseInt(group_id),
-                });
-                if (error) {
-                  console.log(error);
-                }
-                if (data) {
-                  console.log(data);
-                  await getGroups();
-                  // TODO: Add a toast to confirm leaving group
-                  navigate('/groups');
-                }
-              }}
-            >
-              Leave
-            </Button>
-            <Stack spacing={0}>
-              <Text style={{ fontWeight: 700 }}>Invite Code</Text>
-              <Text inline italic align="center">
-                {group?.invite_code}
-              </Text>
-            </Stack>
-            <CopyButton value="Invite Code">
-              {({ copied, copy }) => (
-                // Provided by the clipboard hook
-                <Tooltip
-                  label={copied ? 'Copied' : 'Copy'}
-                  withArrow
-                  position="right"
+        <Paper p="md">
+          <Stack>
+            <MantineGroup position={'apart'}>
+              <Title>{group?.name}</Title>
+              <MantineGroup>
+                <Button
+                  onClick={async () => {
+                    if (group_id === undefined)
+                      throw new Error('No group id provided');
+                    const { data, error } = await supabase.rpc('leave_group', {
+                      req_id: parseInt(group_id),
+                    });
+                    if (error) {
+                      console.log(error);
+                    }
+                    if (data) {
+                      console.log(data);
+                      await getGroups();
+                      // TODO: Add a toast to confirm leaving group
+                      navigate('/groups');
+                    }
+                  }}
                 >
-                  <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
-                    {copied ? <RxCheck size={16} /> : <RxClipboard size={16} />}
-                  </ActionIcon>
-                </Tooltip>
-              )}
-            </CopyButton>
-          </MantineGroup>
-        </MantineGroup>
-        <Divider />
+                  Leave
+                </Button>
+                <Stack spacing={0}>
+                  <Text style={{ fontWeight: 700 }}>Invite Code</Text>
+                  <Text inline italic align="center">
+                    {group?.invite_code}
+                  </Text>
+                </Stack>
+                <CopyButton value="Invite Code">
+                  {({ copied, copy }) => (
+                    // Provided by the clipboard hook
+                    <Tooltip
+                      label={copied ? 'Copied' : 'Copy'}
+                      withArrow
+                      position="right"
+                    >
+                      <ActionIcon
+                        color={copied ? 'teal' : 'gray'}
+                        onClick={copy}
+                      >
+                        {copied ? (
+                          <RxCheck size={16} />
+                        ) : (
+                          <RxClipboard size={16} />
+                        )}
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </CopyButton>
+              </MantineGroup>
+            </MantineGroup>
+            <Divider />
 
-        <Button
-          onClick={async () => {
-            if (group_id === undefined) throw new Error('No group id provided');
-            const { data, error } = await supabase.rpc('get_group_users', {
-              req_id: parseInt(group_id),
-            });
-            if (error) console.log(error);
-            if (data) console.log(data);
-          }}
-        >
-          GetGroup
+            {members
+              ?.sort((a, b) => {
+                // Sort Owner to top, then sort by full name
+                if (a.is_owner && !b.is_owner) {
+                  return -1;
+                } else if (!a.is_owner && b.is_owner) {
+                  return 1;
+                } else {
+                  return a.full_name.localeCompare(b.full_name);
+                }
+              })
+              .map((member) => {
+                return <MemberPreview {...member} key={member.name} />;
+              })}
+          </Stack>
+        </Paper>
+        <Button onClick={() => navigate(`/group/${group_id}/topics`)}>
+          Load Topics
         </Button>
-
-        {members
-          ?.sort((a, b) => {
-            // Sort Owner to top, then sort by full name
-            if (a.is_owner && !b.is_owner) {
-              return -1;
-            } else if (!a.is_owner && b.is_owner) {
-              return 1;
-            } else {
-              return a.full_name.localeCompare(b.full_name);
-            }
-          })
-          .map((member) => {
-            return <MemberPreview {...member} key={member.name} />;
-          })}
+        <Outlet />
       </Stack>
     );
   }

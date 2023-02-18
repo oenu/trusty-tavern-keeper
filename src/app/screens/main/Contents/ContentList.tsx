@@ -50,8 +50,10 @@ function ContentList() {
   const [contentsError, setContentsError] = useState<string | null>(null);
 
   /**
-   * fetchContents
-   * Fetches all contents from the database
+   * Handle Content Response
+   * Handles the response to a content
+   * @param {number} content_id - The id of the content
+   * @param {ContentIntensity} intensity - The intensity of the response
    * @returns {Promise<void>}
    * @async
    */
@@ -60,7 +62,7 @@ function ContentList() {
   const handleContentResponse = async (
     content_id: number,
     intensity: ContentIntensity
-  ) => {
+  ): Promise<void> => {
     // If the content response is already pending, don't do anything
     if (pendingContentResponses.includes(content_id)) return;
     const user_id = (await supabase.auth.getUser()).data.user?.id;
@@ -137,48 +139,54 @@ function ContentList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const contentCards = contents.map((content) => (
-    <Card key={content.id}>
-      <Stack justify={'space-between'} style={{ height: '100%' }}>
-        <Stack>
-          <Group position="apart" noWrap>
-            <Title order={3}>{content.name}</Title>
-            {pendingContentResponses.includes(content.id) && (
-              <Loader size={20} color="blue" />
-            )}
-          </Group>
-          <Text>{content.description}</Text>
+  const contentCards = contents.map((content) => {
+    const contentValue = contentResponses.find(
+      (contentResponse) => contentResponse.content_id === content.id
+    )?.intensity;
+
+    if (contentValue === undefined) {
+      // Set default value to "Adventure" intensity (A)
+    }
+
+    return (
+      <Card key={content.id}>
+        <Stack justify={'space-between'} style={{ height: '100%' }}>
+          <Stack>
+            <Group position="apart" noWrap>
+              <Title order={3}>{content.name}</Title>
+              {pendingContentResponses.includes(content.id) && (
+                <Loader size={20} color="blue" />
+              )}
+            </Group>
+            <Text>{content.description}</Text>
+          </Stack>
+          <Stack align={'stretch'} justify={'space-between'}>
+            <Skeleton radius="sm" visible={contentResponsesLoading}>
+              <SegmentedControl
+                fullWidth
+                transitionDuration={0}
+                disabled={
+                  contentResponsesLoading ||
+                  pendingContentResponses.includes(content.id)
+                }
+                value={contentValue}
+                onChange={(value) => {
+                  console.log(
+                    `Changing content response for ${content.name} to ${value}`
+                  );
+                  handleContentResponse(content.id, value as ContentIntensity);
+                }}
+                data={Object.keys(ContentIntensity).map((key) => ({
+                  label: key,
+                  value: ContentIntensity[key as keyof typeof ContentIntensity],
+                }))}
+              />
+            </Skeleton>
+          </Stack>
         </Stack>
-        <Stack align={'stretch'} justify={'space-between'}>
-          <Skeleton radius="sm" visible={contentResponsesLoading}>
-            <SegmentedControl
-              fullWidth
-              transitionDuration={0}
-              disabled={
-                contentResponsesLoading ||
-                pendingContentResponses.includes(content.id)
-              }
-              value={
-                contentResponses.find(
-                  (contentResponse) => contentResponse.content_id === content.id
-                )?.intensity
-              }
-              onChange={(value) => {
-                console.log(
-                  `Changing content response for ${content.name} to ${value}`
-                );
-                handleContentResponse(content.id, value as ContentIntensity);
-              }}
-              data={Object.keys(ContentIntensity).map((key) => ({
-                label: key,
-                value: ContentIntensity[key as keyof typeof ContentIntensity],
-              }))}
-            />
-          </Skeleton>
-        </Stack>
-      </Stack>
-    </Card>
-  ));
+      </Card>
+    );
+  });
 
   // Separate the content cards into categories
   const contentCardsByCategory = contentCards.reduce(
@@ -382,6 +390,13 @@ function ContentList() {
 
 export default ContentList;
 
+/**
+ * fetchContents
+ * Fetches all contents from the database
+ * @returns {Promise<Content[]>}
+ * @async
+ */
+
 const fetchContents = async (): Promise<Content[]> => {
   return supabase
     .from('content')
@@ -398,6 +413,14 @@ const fetchContents = async (): Promise<Content[]> => {
       }
     });
 };
+
+/**
+ * fetchContentResponses
+ * Fetches all content responses from the database
+ * @param {number[]} contentIds
+ * @returns {Promise<ContentResponse>}
+ * @async
+ */
 
 const fetchContentResponses = async (
   contentIds: number[]

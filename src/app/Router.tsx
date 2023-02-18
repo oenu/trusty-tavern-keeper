@@ -9,6 +9,7 @@ import Group from './screens/main/Group/Group';
 import CreateGroup from './screens/main/Group/CreateGroup';
 import Profile from './screens/main/Profile/Profile';
 import Debug from './screens/misc/Debug/Debug';
+import Topics from './screens/main/Topics/TopicList';
 
 // Types
 import { Session } from '@supabase/supabase-js';
@@ -25,11 +26,11 @@ function Router({
     <Routes>
       <Route path="/survey/:id" element={<Survey />} />
       <Route path="/login" element={<Login />} />
-      <Route
-        path="/group/:group_id"
-        element={<Group getGroups={getGroups} />}
-      />
+      <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>
+        <Route path="/group/:group_id/topics" element={<Topics />} />
+      </Route>
       <Route path="/contents" element={<ContentList />} />
+
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
       <Route path="/debug" element={<Debug session={session} />} />
       <Route path="/profile" element={<Profile />} />

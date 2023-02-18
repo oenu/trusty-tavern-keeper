@@ -704,6 +704,12 @@ USING ( auth.uid() = user_id );
 CREATE POLICY "Topic responses can be inserted by users who created them."
 ON "topic_response" FOR INSERT WITH CHECK ( auth.uid() = user_id );
 
+
+
+-- Seed Data for the topic_response table
+INSERT INTO public.topic_response (user_id, topic_id, group_id, intensity) VALUES ('00000000-0000-0000-0000-000000000000', 1, 1, 'Fantasy');
+
+
 -- #endregion
 
 
