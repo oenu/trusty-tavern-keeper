@@ -225,6 +225,36 @@ export interface Database {
         }
         Returns: number
       }
+      get_group_topic_intensity: {
+        Args: {
+          input_group_id: number
+        }
+        Returns: {
+          topic_id: number
+          topic_name: string
+          topic_description: string
+          topic_lowest_example: string
+          intensity: Database["public"]["Enums"]["topicintensity"]
+        }[]
+      }
+      get_group_topic_responses: {
+        Args: {
+          req_group_id: number
+        }
+        Returns: {
+          topic_id: number
+          topic_name: string
+          topic_description: string
+          fantasy_count: number
+          adventure_count: number
+          struggle_count: number
+          tragedy_count: number
+          fantasy_example: string
+          adventure_example: string
+          struggle_example: string
+          tragedy_example: string
+        }[]
+      }
       get_group_users: {
         Args: {
           req_id: number
@@ -235,6 +265,18 @@ export interface Database {
           discord_id: string
           profile_picture: string
           is_owner: boolean
+        }[]
+      }
+      get_lowest_intensity_responses: {
+        Args: {
+          input_group_id: number
+        }
+        Returns: {
+          group_topic_id: number
+          group_topic_name: string
+          group_topic_description: string
+          lowest_intensity: Database["public"]["Enums"]["topicintensity"]
+          lowest_intensity_example: string
         }[]
       }
       join_group_with_code: {

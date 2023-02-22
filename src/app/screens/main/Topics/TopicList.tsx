@@ -1,5 +1,5 @@
 import {
-  Text,
+  Button,
   Card,
   Group,
   Loader,
@@ -7,10 +7,10 @@ import {
   SegmentedControl,
   Skeleton,
   Stack,
+  Text,
   Title,
-  SimpleGrid,
 } from '@mantine/core';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from 'src/app/supabase/client';
 import {
@@ -148,48 +148,6 @@ function Topics() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  //   const contentCards = contents.map((content) => (
-  //   <Card key={content.id}>
-  //     <Stack justify={'space-between'} style={{ height: '100%' }}>
-  //       <Stack>
-  //         <Group position="apart" noWrap>
-  //           <Title order={3}>{content.name}</Title>
-  //           {pendingContentResponses.includes(content.id) && (
-  //             <Loader size={20} color="blue" />
-  //           )}
-  //         </Group>
-  //         <Text>{content.description}</Text>
-  //       </Stack>
-  //       <Stack align={'stretch'} justify={'space-between'}>
-  //         <Skeleton radius="sm" visible={contentResponsesLoading}>
-  //           <SegmentedControl
-  //             fullWidth
-  //             transitionDuration={0}
-  //             disabled={
-  //               contentResponsesLoading ||
-  //               pendingContentResponses.includes(content.id)
-  //             }
-  //             value={
-  //               contentResponses.find(
-  //                 (contentResponse) => contentResponse.content_id === content.id
-  //               )?.intensity
-  //             }
-  //             onChange={(value) => {
-  //               console.log(
-  //                 `Changing content response for ${content.name} to ${value}`
-  //               );
-  //               handleContentResponse(content.id, value as ContentIntensity);
-  //             }}
-  //             data={Object.keys(ContentIntensity).map((key) => ({
-  //               label: key,
-  //               value: ContentIntensity[key as keyof typeof ContentIntensity],
-  //             }))}
-  //           />
-  //         </Skeleton>
-  //       </Stack>
-  //     </Stack>
-  //   </Card>
-  // ));
   // Topic Cards
   const topicCards = topics.map((topic) => {
     const topicValue = topicResponses.find(
@@ -274,6 +232,26 @@ function Topics() {
         ) : (
           <Stack>{topicCards}</Stack>
         )}
+
+        <Button
+          onClick={async () => {
+            if (group_id === undefined) {
+              console.error('No group id provided');
+              return;
+            }
+
+            const user_id = (await supabase.auth.getUser()).data.user?.id;
+
+            if (user_id === undefined) {
+              console.error('No user id provided');
+              return;
+            }
+
+            await submitEmptyTopicResponses(parseInt(group_id), user_id);
+          }}
+        >
+          Submit
+        </Button>
       </Stack>
     </Paper>
   );
@@ -315,4 +293,58 @@ const fetchTopicResponses = async (
     throw new Error('Could not fetch topic responses: ' + error.message);
   else if (data) return data;
   else throw new Error('Could not fetch topic responses');
+};
+
+/**
+ * Submit Empty Topic Responses
+ * Submits empty topic responses for all topics at their default intensity if they haven't been submitted yet
+ * @param {number} group_id - The group id to submit topic responses for
+ * @returns {Promise<void>}
+ * @throws {Error} If there is an error submitting topic responses
+ * @async
+ */
+const submitEmptyTopicResponses = async (
+  group_id: number,
+  user_id: string
+): Promise<void> => {
+  // Get all topics and topic responses
+  const topics = await fetchTopics(group_id);
+  const topicResponses = await fetchTopicResponses(group_id);
+
+  // Get all topic ids that don't have a topic response
+  const topicIds = topics.map((topic) => topic.id);
+  const topicResponseIds = topicResponses.map(
+    (topicResponse) => topicResponse.topic_id
+  );
+  const topicIdsWithoutResponses = topicIds.filter(
+    (topicId) => !topicResponseIds.includes(topicId)
+  );
+
+  // If all topics have a topic response, do nothing
+  if (topicIdsWithoutResponses.length === 0) {
+    console.log('All topics have a topic response');
+    return;
+  }
+
+  const user = await supabase.auth.getUser();
+  if (!user) throw new Error('User is not logged in');
+
+  // Submit empty topic responses for all topics that don't have a topic response
+  const topicResponsesToSubmit = topicIdsWithoutResponses.map((topicId) => ({
+    topic_id: topicId,
+    group_id,
+    user_id,
+    intensity: TopicIntensity.Fantasy,
+  }));
+
+  console.log(
+    `Submitting ${topicResponsesToSubmit.length} empty topic responses`
+  );
+
+  const { error } = await supabase
+    .from('topic_response')
+    .insert(topicResponsesToSubmit);
+
+  if (error)
+    throw new Error('Could not submit empty topic responses: ' + error.message);
 };

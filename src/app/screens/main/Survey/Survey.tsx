@@ -17,8 +17,6 @@ function Survey() {
   // Get the id from the url
   const { id } = useParams<{ id: string }>();
 
-  // Get the content data - all the contents
-
   return (
     <div>
       {currentUser ? (
