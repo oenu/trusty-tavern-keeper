@@ -1,5 +1,5 @@
 import { OAuthResponse } from '@supabase/supabase-js';
-import { supabase } from '../../supabase/client';
+import { supabase } from '../../../supabase/client';
 
 const getURL = () => {
   let url =

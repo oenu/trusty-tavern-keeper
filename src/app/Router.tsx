@@ -1,18 +1,18 @@
-import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 // Screens
-import Home from './screens/Home/Home';
-import Survey from './screens/Survey/Survey';
-import Login from './screens/Login/Login';
+
+import CreateGroup from './components/group/CreateGroup';
 import Group from './screens/Group/Group';
-import CreateGroup from './screens/CreateGroup/CreateGroup';
+
 import Profile from './screens/Profile/Profile';
-import Debug from './screens/Debug/Debug';
+
+import Topics from './components/topics/Topics/TopicList';
 
 // Types
 import { Session } from '@supabase/supabase-js';
-import ContentList from './screens/Contents/ContentList';
+import TopicReport from './components/topics/TopicReport/TopicReport';
+import ContentList from './components/contents/ContentList/ContentList';
 
 function Router({
   session,
@@ -23,17 +23,24 @@ function Router({
 }) {
   return (
     <Routes>
-      <Route path="/survey/:id" element={<Survey />} />
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/group/:group_id"
-        element={<Group getGroups={getGroups} />}
-      />
+      {/* Personal Content Prefs */}
       <Route path="/contents" element={<ContentList />} />
+
+      {/* Create Survey */}
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
-      <Route path="/debug" element={<Debug session={session} />} />
+
+      {/* Groups */}
+
+      <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>
+        <Route path="/group/:group_id/report" element={<TopicReport />} />
+        <Route index path="/group/:group_id" element={<Topics />} />
+      </Route>
+
+      {/* Misc */}
       <Route path="/profile" element={<Profile />} />
-      <Route path="/" element={<Home />} index />
+
+      {/* Catch */}
+
       <Route path="*" element={<div>404</div>} />
     </Routes>
   );

@@ -189,14 +189,17 @@ export interface Database {
       user_group: {
         Row: {
           group_id: number
+          topics_submitted: boolean
           user_id: string
         }
         Insert: {
           group_id: number
+          topics_submitted?: boolean
           user_id: string
         }
         Update: {
           group_id?: number
+          topics_submitted?: boolean
           user_id?: string
         }
       }
@@ -225,6 +228,24 @@ export interface Database {
         }
         Returns: number
       }
+      get_group_topic_responses: {
+        Args: {
+          req_group_id: number
+        }
+        Returns: {
+          topic_id: number
+          topic_name: string
+          topic_description: string
+          fantasy_count: number
+          adventure_count: number
+          struggle_count: number
+          tragedy_count: number
+          fantasy_example: string
+          adventure_example: string
+          struggle_example: string
+          tragedy_example: string
+        }[]
+      }
       get_group_users: {
         Args: {
           req_id: number
@@ -235,13 +256,14 @@ export interface Database {
           discord_id: string
           profile_picture: string
           is_owner: boolean
+          topics_submitted: boolean
         }[]
       }
       join_group_with_code: {
         Args: {
           invite: string
         }
-        Returns: Json
+        Returns: number
       }
       leave_group: {
         Args: {

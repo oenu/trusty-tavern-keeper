@@ -34,7 +34,7 @@ function JoinBox({ getGroups }: { getGroups: () => Promise<void> }) {
         onClick={async () => {
           const { data, error } = await supabase.rpc('join_group_with_code', {
             invite: text,
-          });
+          }); // Returns the group id if successful
 
           if (error) {
             setErrorMessage(error.message);
@@ -42,10 +42,8 @@ function JoinBox({ getGroups }: { getGroups: () => Promise<void> }) {
           }
 
           if (data) {
-            console.log(data[0]);
-            getGroups().then(() => {
-              navigate('/group/' + data[0].group_id);
-            });
+            await getGroups();
+            navigate(`/group/${data}`);
           }
         }}
       >

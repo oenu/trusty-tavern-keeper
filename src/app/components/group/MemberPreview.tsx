@@ -12,11 +12,11 @@ import {
 import { useHover } from '@mantine/hooks';
 
 // Icons
-import { RxCheck } from 'react-icons/rx';
+import { RxCheck, RxCross1 } from 'react-icons/rx';
 import { SiDiscord } from 'react-icons/si';
 
 // Types
-import { GroupMember } from './Group';
+import { GroupMember } from 'src/app/screens/Group/Group';
 
 export default function MemberPreview(member: GroupMember) {
   const { hovered, ref } = useHover();
@@ -60,8 +60,12 @@ export default function MemberPreview(member: GroupMember) {
           </Text>
         )}
         <Group>
-          <Text style={{ fontWeight: 700 }}>Survey Complete?</Text>
-          <RxCheck size={30} />
+          <Text style={{ fontWeight: 700 }}>Topics Submitted?</Text>
+          {member.topics_submitted ? (
+            <RxCheck size={30} />
+          ) : (
+            <RxCross1 size={30} />
+          )}
         </Group>
       </Group>
       <Divider />

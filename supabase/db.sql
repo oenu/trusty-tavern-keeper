@@ -150,6 +150,7 @@ ALTER TABLE public.group ENABLE ROW LEVEL SECURITY;
 CREATE TABLE public.user_group (
     user_id uuid REFERENCES public.user ON DELETE CASCADE NOT NULL,
     group_id INTEGER REFERENCES public.group ON DELETE CASCADE NOT NULL,
+    topics_submitted BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id, group_id)
 );
 
@@ -184,7 +185,9 @@ $$ LANGUAGE plpgsql;
 -- The function that allows a user to join a group with a given invite code
 CREATE OR REPLACE FUNCTION public.join_group_with_code(
   invite TEXT
-) returns JSON
+)
+-- We want to return the group id of the group the user joined
+RETURNS INTEGER
 security definer set search_path = public
  AS $$
 DECLARE
@@ -219,10 +222,7 @@ IF EXISTS (SELECT * FROM public.user_group WHERE group_id = group_to_join AND us
   VALUES (auth.uid(), group_to_join);
 
 
-  -- Return a success message 
-  -- RETURN json_build_object('message', 'Successfully joined group with id: ' ||  group_to_join::TEXT, 'group_id', group_to_join, 'invite_code', invite::TEXT);
-  -- Returns json object inside an array
-  RETURN json_build_array(json_build_object('message', 'Successfully joined group with id: ' ||  group_to_join::TEXT, 'group_id', group_to_join, 'invite_code', invite::TEXT));
+  RETURN  group_to_join;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -342,7 +342,8 @@ CREATE OR REPLACE FUNCTION public.get_group_users(
   name TEXT,
   discord_id TEXT,
   profile_picture TEXT,
-  is_owner BOOLEAN
+  is_owner BOOLEAN,
+  topics_submitted BOOLEAN
 ) 
 security definer set search_path = public
 AS $$
@@ -358,7 +359,7 @@ BEGIN
 
   -- Return the list of users in the group (rewrite to include owner)
   RETURN QUERY
-  SELECT u.full_name, u.name, u.discord_id, u.profile_picture, g.owner = u.id
+  SELECT u.full_name, u.name, u.discord_id, u.profile_picture, g.owner = u.id, ug.topics_submitted
   FROM public.user_group ug
   INNER JOIN public.user u ON ug.user_id = u.id
   INNER JOIN public.group g ON ug.group_id = g.id
@@ -417,6 +418,11 @@ USING ( auth.uid() = user_id );
 CREATE POLICY "Users can view groups they are members of."
 ON "user_group" FOR SELECT
 USING ( auth.uid() = user_id );
+
+CREATE POLICY "Users can update groups they are members of."
+ON "user_group" FOR UPDATE
+USING ( auth.uid() = user_id );
+
 
 
 
@@ -704,8 +710,70 @@ USING ( auth.uid() = user_id );
 CREATE POLICY "Topic responses can be inserted by users who created them."
 ON "topic_response" FOR INSERT WITH CHECK ( auth.uid() = user_id );
 
--- #endregion
 
+
+-- Seed Data for the topic_response table
+INSERT INTO public.topic_response (user_id, topic_id, group_id, intensity) VALUES ('00000000-0000-0000-0000-000000000000', 1, 1, 'Fantasy');
+
+
+-- Function that is triggered when a user leaves a group
+-- Deletes all of the user's topic responses for that group (content responses are not deleted)
+CREATE OR REPLACE FUNCTION public.delete_topic_responses_on_leave_group()
+RETURNS TRIGGER AS $$
+BEGIN
+  DELETE FROM public.topic_response WHERE user_id = auth.uid() AND group_id = OLD.group_id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_topic_responses_on_leave_group
+AFTER DELETE ON public.user_group
+FOR EACH ROW
+EXECUTE PROCEDURE public.delete_topic_responses_on_leave_group();
+
+
+
+CREATE OR REPLACE FUNCTION public.get_group_topic_responses(
+    req_group_id INTEGER
+)
+RETURNS TABLE (
+    topic_id INTEGER,
+    topic_name TEXT,
+    topic_description TEXT,
+    fantasy_count BIGINT,
+    adventure_count BIGINT,
+    struggle_count BIGINT,
+    tragedy_count BIGINT,
+    fantasy_example TEXT,
+    adventure_example TEXT,
+    struggle_example TEXT,
+    tragedy_example TEXT
+) 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
+BEGIN
+-- Check if the user is in the group
+IF NOT EXISTS (SELECT * FROM public.user_group WHERE group_id = req_group_id AND user_id = auth.uid()) THEN
+    RAISE EXCEPTION 'User is not in group';
+  END IF;
+
+  RETURN QUERY
+  SELECT t.id AS topic_id, t.name AS topic_name, t.description AS topic_description,
+         COUNT(CASE WHEN tr.intensity = 'Fantasy' THEN 1 END) AS fantasy_count,
+         COUNT(CASE WHEN tr.intensity = 'Adventure' THEN 1 END) AS adventure_count,
+         COUNT(CASE WHEN tr.intensity = 'Struggle' THEN 1 END) AS struggle_count,
+         COUNT(CASE WHEN tr.intensity = 'Tragedy' THEN 1 END) AS tragedy_count,
+         t.fantasy_example AS fantasy_example,
+         t.adventure_example AS adventure_example,
+         t.struggle_example AS struggle_example,
+         t.tragedy_example AS tragedy_example
+  FROM public.topic_response tr
+  JOIN public.topic t ON tr.topic_id = t.id
+  WHERE tr.group_id = req_group_id
+  GROUP BY t.id
+  HAVING COUNT(*) >= 2;
+END;
+$$ LANGUAGE plpgsql;
 
 
 

@@ -9,6 +9,7 @@ export default Story;
 
 const Template: ComponentStory<typeof Group> = (args) => (
   <Group
+
   // {...args}
   />
 );
