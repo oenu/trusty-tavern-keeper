@@ -1,8 +1,7 @@
 import { Button } from '@mantine/core';
-import React from 'react';
-import { handleRegister } from 'src/app/features/auth/register';
-import { supabase } from 'src/app/supabase/client';
 import { Session } from '@supabase/supabase-js';
+import { handleRegister } from 'src/app/components/auth/functions/register';
+import { supabase } from 'src/app/supabase/client';
 
 function Debug({ session }: { session: Session | null }) {
   const testSupabase = async () => {

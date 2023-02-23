@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { Session } from '@supabase/supabase-js';
 import { createContext, useEffect, useState } from 'react';
 
-import { AppNavbar } from 'src/app/features/nav/AppNavbar/AppNavbar';
+import { AppNavbar } from 'src/app/components/navbar/AppNavbar/AppNavbar';
 import { supabase } from 'src/app/supabase/client';
 import Router from './Router';
 import { Group } from './types/supabase-type-extensions';

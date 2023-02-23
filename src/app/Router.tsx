@@ -4,16 +4,16 @@ import { Route, Routes } from 'react-router-dom';
 import CreateGroup from './screens/main/Group/CreateGroup';
 import Group from './screens/main/Group/Group';
 import Home from './screens/main/Home/Home';
-import Login from './screens/main/Login/Login';
+import Login from './components/auth/Login/Login';
 import Profile from './screens/main/Profile/Profile';
 
-import Topics from './screens/main/Topics/TopicList';
+import Topics from './components/topics/Topics/TopicList';
 import Debug from './screens/misc/Debug/Debug';
 
 // Types
 import { Session } from '@supabase/supabase-js';
 import ContentList from './screens/main/Contents/ContentList';
-import TopicReport from './screens/main/TopicReport/TopicReport';
+import TopicReport from './components/topics/TopicReport/TopicReport';
 
 function Router({
   session,

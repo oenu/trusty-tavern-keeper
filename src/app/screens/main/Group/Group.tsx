@@ -30,8 +30,8 @@ import {
   Group as GroupType,
   User,
 } from 'src/app/types/supabase-type-extensions';
-import TopicReport from '../TopicReport/TopicReport';
-import TopicList from '../Topics/TopicList';
+import TopicReport from '../../../components/topics/TopicReport/TopicReport';
+import TopicList from '../../../components/topics/Topics/TopicList';
 
 // Local Types
 export type GroupMember = Pick<
