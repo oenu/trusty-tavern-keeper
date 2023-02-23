@@ -2,8 +2,8 @@
 // Generated from each of the topic responses in the group,
 // Will only be shown once 3 or more responses have been submitted (anonymity)
 
-import { Button, Card, Group, Stack, Text, Title } from '@mantine/core';
-import React, { useState } from 'react';
+import { Card, Group, Stack, Text, Title } from '@mantine/core';
+import { useEffect, useState } from 'react';
 import {
   RiGhost2Fill,
   RiParentFill,
@@ -11,7 +11,7 @@ import {
   RiUserFill,
 } from 'react-icons/ri';
 import { supabase } from 'src/app/supabase/client';
-import { Topic, TopicResponse } from 'src/app/types/supabase-type-extensions';
+import { Topic } from 'src/app/types/supabase-type-extensions';
 
 /**
  * Dev Notes:
@@ -35,12 +35,26 @@ interface GroupTopicResponse {
 }
 
 function TopicReport() {
-  const [showDetails, setShowDetails] = useState<boolean>(false);
   const [groupTopicResponses, setGroupTopicResponses] = useState<
     GroupTopicResponse[]
   >([]);
 
   const iconSize = '2rem';
+
+  useEffect(() => {
+    supabase
+      .rpc('get_group_topic_responses', { req_group_id: 1 }) // TODO: Replace with group id
+      .then((response) => {
+        if (response.error) {
+          console.error(response.error);
+        }
+
+        if (response.data) {
+          console.log(response.data);
+          setGroupTopicResponses(response.data);
+        }
+      });
+  }, []);
 
   const reportItem = ({
     groupTopicResponse,
@@ -93,7 +107,6 @@ function TopicReport() {
           </Group>
 
           <Stack>
-            <Title order={4}>Example</Title>
             <Text italic>{selectedExample} </Text>
           </Stack>
         </Group>
@@ -107,24 +120,6 @@ function TopicReport() {
 
   return (
     <>
-      <Button
-        onClick={() => {
-          supabase
-            .rpc('get_group_topic_responses', { req_group_id: 1 }) // TODO: Replace with group id
-            .then((response) => {
-              if (response.error) {
-                console.error(response.error);
-              }
-
-              if (response.data) {
-                console.log(response.data);
-                setGroupTopicResponses(response.data);
-              }
-            });
-        }}
-      >
-        Get Group Topic Responses
-      </Button>
       <Title order={3}>Topic Report</Title>
       <Text>
         This report is generated from each of the topic responses in the group.
@@ -137,18 +132,3 @@ function TopicReport() {
 }
 
 export default TopicReport;
-
-/**
- * Fetch Group Topic Responses
- * Fetches the topic responses for the group once at least 3 responses have been submitted
- * @param groupId
- * @returns
- */
-
-// const fetchGroupTopicResponses = async (groupId: Group['id']) => {
-//   if (error) {
-//     console.error(error);
-//   }
-
-//   return data;
-// };

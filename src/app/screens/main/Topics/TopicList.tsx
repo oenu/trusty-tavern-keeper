@@ -20,6 +20,8 @@ import {
 } from 'src/app/types/supabase-type-extensions';
 
 function Topics() {
+  // Get current user
+
   // Get group id from url params
   const { group_id } = useParams();
 

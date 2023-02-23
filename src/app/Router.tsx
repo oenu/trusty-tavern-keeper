@@ -6,7 +6,7 @@ import Group from './screens/main/Group/Group';
 import Home from './screens/main/Home/Home';
 import Login from './screens/main/Login/Login';
 import Profile from './screens/main/Profile/Profile';
-import CreateSurvey from './screens/main/Survey/CreateSurvey';
+
 import Topics from './screens/main/Topics/TopicList';
 import Debug from './screens/misc/Debug/Debug';
 
@@ -31,7 +31,7 @@ function Router({
 
       {/* Create Survey */}
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
-      <Route path="/create/survey" element={<CreateSurvey />} />
+
       {/* Groups */}
       <Route path="/group/:group_id/topics" element={<Topics />} />
       <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>

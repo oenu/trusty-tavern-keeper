@@ -7,6 +7,7 @@ import {
   Divider,
   Group as MantineGroup,
   Paper,
+  SegmentedControl,
   Stack,
   Text,
   Title,
@@ -16,7 +17,7 @@ import MemberPreview from './MemberPreview';
 
 // Hooks
 import { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Icons
 import { RxCheck, RxClipboard } from 'react-icons/rx';
@@ -29,6 +30,8 @@ import {
   Group as GroupType,
   User,
 } from 'src/app/types/supabase-type-extensions';
+import TopicReport from '../TopicReport/TopicReport';
+import TopicList from '../Topics/TopicList';
 
 // Local Types
 export type GroupMember = Pick<
@@ -46,6 +49,9 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   const [members, setMembers] = useState<GroupMember[] | null>(null);
   const [groupError, setGroupError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Outlet State
+  const [subRoute, setSubRoute] = useState<string>('topics');
 
   // Navigate Hook
   const navigate = useNavigate();
@@ -166,23 +172,31 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
             {members
               ?.sort((a, b) => {
                 // Sort Owner to top, then sort by full name
-                if (a.is_owner && !b.is_owner) {
-                  return -1;
-                } else if (!a.is_owner && b.is_owner) {
-                  return 1;
-                } else {
-                  return a.full_name.localeCompare(b.full_name);
-                }
+                if (a.is_owner && !b.is_owner) return -1;
+                else if (!a.is_owner && b.is_owner) return 1;
+                else return a.full_name.localeCompare(b.full_name);
               })
-              .map((member) => {
-                return <MemberPreview {...member} key={member.name} />;
-              })}
+              .map((member) => (
+                <MemberPreview {...member} key={member.name} />
+              ))}
           </Stack>
         </Paper>
-        <Button onClick={() => navigate(`/group/${group_id}/topics`)}>
-          Load Topics
-        </Button>
-        <Outlet />
+        <SegmentedControl
+          value={subRoute}
+          onChange={(value) => setSubRoute(value)}
+          data={[
+            {
+              label: 'Survey',
+              value: 'topics',
+            },
+            {
+              label: 'Report',
+              value: 'report',
+            },
+          ]}
+        />
+
+        {subRoute === 'topics' ? <TopicList /> : <TopicReport />}
       </Stack>
     );
   }
