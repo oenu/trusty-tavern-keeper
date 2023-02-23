@@ -189,14 +189,17 @@ export interface Database {
       user_group: {
         Row: {
           group_id: number
+          topics_submitted: boolean
           user_id: string
         }
         Insert: {
           group_id: number
+          topics_submitted?: boolean
           user_id: string
         }
         Update: {
           group_id?: number
+          topics_submitted?: boolean
           user_id?: string
         }
       }
@@ -253,6 +256,7 @@ export interface Database {
           discord_id: string
           profile_picture: string
           is_owner: boolean
+          topics_submitted: boolean
         }[]
       }
       join_group_with_code: {

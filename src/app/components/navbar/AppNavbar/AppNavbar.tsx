@@ -15,11 +15,9 @@ import { DiscordButton } from '../../auth/DiscordButton';
 import { UserButton } from '../UserButton/UserButton';
 
 // Supabase
-import { SessionContext } from 'src/app/app';
-import { GroupContext } from 'src/app/app';
+import { GroupContext, SessionContext } from 'src/app/app';
 
 import JoinBox from '../JoinBox/JoinBox';
-import ContentList from 'src/app/screens/main/Contents/ContentList';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');
@@ -130,16 +128,41 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
     </NavLink>
   ));
 
-  return (
-    <Navbar width={{ sm: 300 }} p="md" pb="0">
-      <Navbar.Section className={classes.header}>
-        <Group position="apart">
-          <Text size="xl" weight={500}>
-            Trusty Tavern
-          </Text>
-          <Code sx={{ fontWeight: 700 }}>v0.0.1</Code>
-        </Group>
-      </Navbar.Section>
+  // Header with title and version
+  const navbarHeader = (
+    <Navbar.Section className={classes.header}>
+      <Group position="apart">
+        <Text size="xl" weight={500}>
+          Trusty Tavern
+        </Text>
+        <Code sx={{ fontWeight: 700 }}>v0.0.1</Code>
+      </Group>
+    </Navbar.Section>
+  );
+
+  // Footer with user button or discord button
+  const navbarFooter = session?.user ? (
+    <Navbar.Section className={classes.footer}>
+      <UserButton
+        image={session?.user.user_metadata.avatar_url}
+        name={session?.user.user_metadata.full_name}
+        discriminator={session?.user?.identities?.[0]?.identity_data.name}
+      />
+    </Navbar.Section>
+  ) : (
+    <DiscordButton
+      session={session}
+      path={'/dashboard'}
+      callback={(response) => {
+        console.log(response);
+      }}
+      label
+    />
+  );
+
+  // Links to groups and a shortcut to the contents page (subject to change)
+  const navbarLinks = (
+    <>
       <Navbar.Section grow>{links}</Navbar.Section>
       <Navbar.Section mb={'md'}>
         <NavLink
@@ -153,6 +176,12 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
           <Group style={{ fontWeight: 700 }}>Contents</Group>
         </NavLink>
       </Navbar.Section>
+    </>
+  );
+
+  // Join box and create new group button
+  const navbarInteractions = (
+    <>
       <Navbar.Section mb={'md'}>
         <JoinBox getGroups={getGroups} />
       </Navbar.Section>
@@ -169,26 +198,15 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
           Create New Group
         </Group>
       </NavLink>
-      {/* Create new Group */}
+    </>
+  );
 
-      {session?.user ? (
-        <Navbar.Section className={classes.footer}>
-          <UserButton
-            image={session?.user.user_metadata.avatar_url}
-            name={session?.user.user_metadata.full_name}
-            discriminator={session?.user?.identities?.[0]?.identity_data.name}
-          />
-        </Navbar.Section>
-      ) : (
-        <DiscordButton
-          session={session}
-          path={'/dashboard'}
-          callback={(response) => {
-            console.log(response);
-          }}
-          label
-        />
-      )}
+  return (
+    <Navbar width={{ sm: 300 }} p="md" pb="0">
+      {navbarHeader}
+      {navbarLinks}
+      {navbarInteractions}
+      {navbarFooter}
     </Navbar>
   );
 }

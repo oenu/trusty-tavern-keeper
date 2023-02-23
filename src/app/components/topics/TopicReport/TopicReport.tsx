@@ -2,7 +2,16 @@
 // Generated from each of the topic responses in the group,
 // Will only be shown once 3 or more responses have been submitted (anonymity)
 
-import { Card, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  Box,
+  Card,
+  Container,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { useEffect, useState } from 'react';
 import {
   RiGhost2Fill,
@@ -58,39 +67,31 @@ function TopicReport() {
 
   const reportItem = ({
     groupTopicResponse,
+    intensity,
   }: {
     groupTopicResponse: GroupTopicResponse;
+    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
   }) => {
-    const {
-      fantasy_count,
-      adventure_count,
-      struggle_count,
-      tragedy_count,
-      topic_id,
-      topic_description,
-      topic_name,
-    } = groupTopicResponse;
-
-    let groupLevel = ''; // Fantasy, Adventure, Struggle, Tragedy (Uses the lowest level of intensity)
+    const { topic_id, topic_description, topic_name } = groupTopicResponse;
     let selectedExample = ''; // Example of the topic
     let selectedIcon = <RiParentFill size={iconSize} />; // Icon to show the intensity
-
-    if (fantasy_count > 0) {
-      groupLevel = 'Fantasy';
-      selectedIcon = <RiParentFill size={iconSize} />;
-      selectedExample = groupTopicResponse.fantasy_example;
-    } else if (adventure_count > 0) {
-      groupLevel = 'Adventure';
-      selectedIcon = <RiUserFill size={iconSize} />;
-      selectedExample = groupTopicResponse.adventure_example;
-    } else if (struggle_count > 0) {
-      groupLevel = 'Struggle';
-      selectedIcon = <RiGhost2Fill size={iconSize} />;
-      selectedExample = groupTopicResponse.struggle_example;
-    } else if (tragedy_count > 0) {
-      groupLevel = 'Tragedy';
-      selectedIcon = <RiSkull2Fill size={iconSize} />;
-      selectedExample = groupTopicResponse.tragedy_example;
+    switch (intensity) {
+      case 'Fantasy':
+        selectedIcon = <RiParentFill size={iconSize} />;
+        selectedExample = groupTopicResponse.fantasy_example;
+        break;
+      case 'Adventure':
+        selectedIcon = <RiUserFill size={iconSize} />;
+        selectedExample = groupTopicResponse.adventure_example;
+        break;
+      case 'Struggle':
+        selectedIcon = <RiGhost2Fill size={iconSize} />;
+        selectedExample = groupTopicResponse.struggle_example;
+        break;
+      case 'Tragedy':
+        selectedIcon = <RiSkull2Fill size={iconSize} />;
+        selectedExample = groupTopicResponse.tragedy_example;
+        break;
     }
 
     return (
@@ -98,34 +99,56 @@ function TopicReport() {
         <Group noWrap>
           {selectedIcon}
           <Group style={{ width: '50%' }}>
-            <Stack>
+            <Stack justify={'center'} spacing="xs">
               <Title order={3}>{topic_name}</Title>
               <Text italic size={'lg'}>
-                {groupLevel}
+                {intensity}
               </Text>
             </Stack>
           </Group>
-
-          <Stack>
-            <Text italic>{selectedExample} </Text>
-          </Stack>
+          <Text italic>{selectedExample} </Text>
         </Group>
       </Card>
     );
   };
 
-  const reports = groupTopicResponses.map((groupTopicResponse) => {
-    return reportItem({ groupTopicResponse });
-  });
+  const intensityClassifier = (
+    groupTopicResponses: GroupTopicResponse[]
+  ): {
+    groupTopicResponse: GroupTopicResponse;
+    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
+  }[] => {
+    const intensityArray = groupTopicResponses.map((groupTopicResponse) => {
+      const { fantasy_count, adventure_count, struggle_count, tragedy_count } =
+        groupTopicResponse;
+      let intensity = 'Fantasy' as
+        | 'Fantasy'
+        | 'Adventure'
+        | 'Struggle'
+        | 'Tragedy';
+      if (fantasy_count > 0) intensity = 'Fantasy';
+      else if (adventure_count > 0) intensity = 'Adventure';
+      else if (struggle_count > 0) intensity = 'Struggle';
+      else if (tragedy_count > 0) intensity = 'Tragedy';
+      return { groupTopicResponse, intensity };
+    });
+    return intensityArray;
+  };
+
+  const reports = intensityClassifier(groupTopicResponses).map((report) =>
+    reportItem(report)
+  );
 
   return (
     <>
-      <Title order={3}>Topic Report</Title>
-      <Text>
-        This report is generated from each of the topic responses in the group.
-        It will only be shown once 3 or more responses have been submitted
-        (anonymity).
-      </Text>
+      <Paper p="md">
+        <Title order={3}>Topic Report</Title>
+        <Text>
+          This report is generated from each of the topic responses in the
+          group. It will only be shown once 3 or more responses have been
+          submitted for anonymity.
+        </Text>
+      </Paper>
       {reports}
     </>
   );

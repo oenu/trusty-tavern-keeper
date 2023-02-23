@@ -1,14 +1,15 @@
 import type { ComponentStory, ComponentMeta } from '@storybook/react';
-import Home from './Home';
+import Group from './Group';
 
-const Story: ComponentMeta<typeof Home> = {
-  component: Home,
-  title: 'Home',
+const Story: ComponentMeta<typeof Group> = {
+  component: Group,
+  title: 'Group',
 };
 export default Story;
 
-const Template: ComponentStory<typeof Home> = (args) => (
-  <Home
+const Template: ComponentStory<typeof Group> = (args) => (
+  <Group
+
   // {...args}
   />
 );

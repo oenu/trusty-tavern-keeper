@@ -28,6 +28,7 @@ function Topics() {
   // Data states
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicResponses, setTopicResponses] = useState<TopicResponse[]>([]);
+  const [hasSubmittedTopics, setHasSubmittedTopics] = useState<boolean>(false);
 
   // Loading states
   const [topicResponsesLoading, setTopicResponsesLoading] =
@@ -38,9 +39,9 @@ function Topics() {
   );
 
   // Error states
-  const [topicResponsesError, setTopicResponsesError] = useState<string | null>(
-    null
-  );
+  // const [topicResponsesError, setTopicResponsesError] = useState<string | null>(
+  // null
+  // );
   const [topicsError, setTopicsError] = useState<string | null>(null);
 
   /**
@@ -122,6 +123,21 @@ function Topics() {
       });
   };
 
+  const fetchSubmittedStatus = async (group_id: number) => {
+    const user_id = (await supabase.auth.getUser()).data.user?.id;
+    if (!user_id) console.error('No user id, this should not happen');
+    else {
+      supabase
+        .from('user_group')
+        .select('*')
+        .match({ user_id, group_id })
+        .then(({ data, error }) => {
+          data && setHasSubmittedTopics(data[0].topics_submitted);
+          error && console.error(error);
+        });
+    }
+  };
+
   // Fetch topics and topic responses
   useEffect(() => {
     // Verify that the group id is defined
@@ -131,6 +147,7 @@ function Topics() {
       return;
     }
 
+    // Fetch topics and topic responses
     fetchTopics(parseInt(group_id))
       .then((topics: Topic[]) => {
         setTopics(topics);
@@ -141,12 +158,16 @@ function Topics() {
             setTopicResponsesLoading(false);
           })
           .catch((error) => {
-            setTopicResponsesError(error.message);
+            console.error(error);
+            // setTopicResponsesError(error.message);
           });
       })
       .catch((error) => {
         setTopicsError(error.message);
       });
+
+    fetchSubmittedStatus(parseInt(group_id));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -236,6 +257,7 @@ function Topics() {
         )}
 
         <Button
+          color={hasSubmittedTopics ? 'red' : 'blue'}
           onClick={async () => {
             if (group_id === undefined) {
               console.error('No group id provided');
@@ -249,10 +271,13 @@ function Topics() {
               return;
             }
 
-            await submitEmptyTopicResponses(parseInt(group_id), user_id);
+            await submitEmptyTopicResponses(parseInt(group_id));
+            await toggleTopicsSubmittedState(parseInt(group_id));
+
+            await fetchSubmittedStatus(parseInt(group_id));
           }}
         >
-          Submit
+          {hasSubmittedTopics ? 'Withdraw Response' : 'Submit Response'}
         </Button>
       </Stack>
     </Paper>
@@ -305,10 +330,11 @@ const fetchTopicResponses = async (
  * @throws {Error} If there is an error submitting topic responses
  * @async
  */
-const submitEmptyTopicResponses = async (
-  group_id: number,
-  user_id: string
-): Promise<void> => {
+const submitEmptyTopicResponses = async (group_id: number): Promise<void> => {
+  // Get user id
+  const user_id = (await supabase.auth.getUser()).data.user?.id;
+  if (!user_id) throw new Error('No user id provided');
+
   // Get all topics and topic responses
   const topics = await fetchTopics(group_id);
   const topicResponses = await fetchTopicResponses(group_id);
@@ -328,9 +354,6 @@ const submitEmptyTopicResponses = async (
     return;
   }
 
-  const user = await supabase.auth.getUser();
-  if (!user) throw new Error('User is not logged in');
-
   // Submit empty topic responses for all topics that don't have a topic response
   const topicResponsesToSubmit = topicIdsWithoutResponses.map((topicId) => ({
     topic_id: topicId,
@@ -349,4 +372,43 @@ const submitEmptyTopicResponses = async (
 
   if (error)
     throw new Error('Could not submit empty topic responses: ' + error.message);
+};
+
+/**
+ * Toggle Topics Submitted State
+ * Toggles the topics submitted state for a particular group
+ * @param {number} group_id - The group id to toggle the topics submitted state for
+ * @returns {Promise<void>}
+ * @throws {Error} If there is an error toggling the topics submitted state
+ */
+
+const toggleTopicsSubmittedState = async (group_id: number): Promise<void> => {
+  const user_id = (await supabase.auth.getUser()).data.user?.id;
+  if (!user_id) throw new Error('User is not logged in');
+
+  // Get current topics submitted state
+  const { data, error } = await supabase
+    .from('user_group')
+    .select('*')
+    .eq('group_id', group_id)
+    .eq('user_id', user_id);
+
+  if (error)
+    throw new Error('Could not get topics submitted state: ' + error.message);
+  else if (!data) throw new Error('Could not get topics submitted state');
+
+  const topics_submitted = data[0].topics_submitted;
+
+  // Toggle topics submitted state
+  const { error: error2 } = await supabase
+    .from('user_group')
+    .update({ topics_submitted: !topics_submitted })
+    .match({ group_id, user_id });
+
+  if (error2)
+    throw new Error(
+      'Could not toggle topics submitted state: ' + error2.message
+    );
+
+  console.log('Topics submitted state toggled');
 };
