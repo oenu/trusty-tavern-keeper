@@ -158,7 +158,7 @@ function Topics() {
       });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [group_id]);
 
   // ====================== RENDER ======================
 
