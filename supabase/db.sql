@@ -505,7 +505,7 @@ INSERT INTO public.content (name, description, category) VALUES ('Abandonment', 
 INSERT INTO public.content (name, description, category) VALUES ('Dentists', 'Dentists, dental hygienists, and other people who work in a dental office.', 'Social');
 INSERT INTO public.content (name, description, category) VALUES ('Clowns', 'Clowns, circus performers, often with exaggerated features.', 'Social');
 INSERT INTO public.content (name, description, category) VALUES ('Evil Races', 'Depictions of a specific group of people, such as goblins or orcs as being inherently evil.', 'Social');
-INSERT INTO public.content (name, description, category) VALUES ('Kidnapping', 'Being taken against your will, or being unable to escape.', 'Social');
+INSERT INTO public.content (name, description, category) VALUES ('Kidnapping / Abduction', 'Being taken against your will, or being unable to escape.', 'Social');
 INSERT INTO public.content (name, description, category) VALUES ('Sexual Assault', 'Depictions of sexual violence, such as rape or molestation.', 'Social');
 INSERT INTO public.content (name, description, category) VALUES ('Incest', 'Sexual activity or intimate relationships between close family members.', 'Social');
 INSERT INTO public.content (name, description, category) VALUES ('Domestic Violence', 'Depictions of violence in the home, or violence against a spouse or partner.', 'Social');

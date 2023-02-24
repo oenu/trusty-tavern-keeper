@@ -19,6 +19,7 @@ import {
   RiSkull2Fill,
   RiUserFill,
 } from 'react-icons/ri';
+import { useParams } from 'react-router-dom';
 import { supabase } from 'src/app/supabase/client';
 import { Topic } from 'src/app/types/supabase-type-extensions';
 
@@ -48,11 +49,25 @@ function TopicReport() {
     GroupTopicResponse[]
   >([]);
 
+  const { group_id } = useParams<{ group_id: string }>();
+
   const iconSize = '2rem';
 
   useEffect(() => {
+    if (!group_id) {
+      console.error('No group id provided, cannot fetch group topic responses');
+      return;
+    }
+    const group_id_int = parseInt(group_id);
+    if (isNaN(group_id_int)) {
+      console.error(
+        'Invalid group id provided, cannot fetch group topic responses'
+      );
+      return;
+    }
+
     supabase
-      .rpc('get_group_topic_responses', { req_group_id: 1 }) // TODO: Replace with group id
+      .rpc('get_group_topic_responses', { req_group_id: group_id_int })
       .then((response) => {
         if (response.error) {
           console.error(response.error);
@@ -63,6 +78,7 @@ function TopicReport() {
           setGroupTopicResponses(response.data);
         }
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const reportItem = ({
