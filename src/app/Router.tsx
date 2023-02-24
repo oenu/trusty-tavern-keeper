@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 
 // Screens
 
-import CreateGroup from './components/group/CreateGroup';
+import CreateGroup from './screens/CreateGroup/CreateGroup';
 import Group from './screens/Group/Group';
 
 import Profile from './screens/Profile/Profile';

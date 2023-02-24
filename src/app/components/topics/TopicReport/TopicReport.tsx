@@ -1,28 +1,23 @@
-// Topic report
-// Generated from each of the topic responses in the group,
-// Will only be shown once 3 or more responses have been submitted (anonymity)
+// Components
+import { Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
 
-import {
-  Box,
-  Card,
-  Container,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  Title,
-} from '@mantine/core';
+// Hooks
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+// Icons
 import {
   RiGhost2Fill,
   RiParentFill,
   RiSkull2Fill,
   RiUserFill,
 } from 'react-icons/ri';
-import { useParams } from 'react-router-dom';
-import { supabase } from 'src/app/supabase/client';
-import { Topic } from 'src/app/types/supabase-type-extensions';
 
+// Supabase
+import { supabase } from 'src/app/supabase/client';
+
+// Types
+import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
 /**
  * Dev Notes:
  * - Should be able to sort by intensity
@@ -86,34 +81,33 @@ function TopicReport() {
     intensity,
   }: {
     groupTopicResponse: GroupTopicResponse;
-    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
+    intensity: TopicIntensity;
   }) => {
     const { topic_id, topic_description, topic_name } = groupTopicResponse;
-    let selectedExample = ''; // Example of the topic
-    let selectedIcon = <RiParentFill size={iconSize} />; // Icon to show the intensity
-    switch (intensity) {
-      case 'Fantasy':
-        selectedIcon = <RiParentFill size={iconSize} />;
-        selectedExample = groupTopicResponse.fantasy_example;
-        break;
-      case 'Adventure':
-        selectedIcon = <RiUserFill size={iconSize} />;
-        selectedExample = groupTopicResponse.adventure_example;
-        break;
-      case 'Struggle':
-        selectedIcon = <RiGhost2Fill size={iconSize} />;
-        selectedExample = groupTopicResponse.struggle_example;
-        break;
-      case 'Tragedy':
-        selectedIcon = <RiSkull2Fill size={iconSize} />;
-        selectedExample = groupTopicResponse.tragedy_example;
-        break;
-    }
+
+    const reportContent = {
+      [TopicIntensity.Fantasy]: {
+        icon: <RiParentFill size={iconSize} />,
+        example: groupTopicResponse.fantasy_example,
+      },
+      [TopicIntensity.Adventure]: {
+        icon: <RiUserFill size={iconSize} />,
+        example: groupTopicResponse.adventure_example,
+      },
+      [TopicIntensity.Struggle]: {
+        icon: <RiGhost2Fill size={iconSize} />,
+        example: groupTopicResponse.struggle_example,
+      },
+      [TopicIntensity.Tragedy]: {
+        icon: <RiSkull2Fill size={iconSize} />,
+        example: groupTopicResponse.tragedy_example,
+      },
+    };
 
     return (
       <Card key={topic_id}>
         <Group noWrap>
-          {selectedIcon}
+          {reportContent[intensity].icon}
           <Group style={{ width: '50%' }}>
             <Stack justify={'center'} spacing="xs">
               <Title order={3}>{topic_name}</Title>
@@ -122,7 +116,7 @@ function TopicReport() {
               </Text>
             </Stack>
           </Group>
-          <Text italic>{selectedExample} </Text>
+          <Text italic>{reportContent[intensity].example} </Text>
         </Group>
       </Card>
     );
@@ -132,20 +126,16 @@ function TopicReport() {
     groupTopicResponses: GroupTopicResponse[]
   ): {
     groupTopicResponse: GroupTopicResponse;
-    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
+    intensity: TopicIntensity;
   }[] => {
     const intensityArray = groupTopicResponses.map((groupTopicResponse) => {
       const { fantasy_count, adventure_count, struggle_count, tragedy_count } =
         groupTopicResponse;
-      let intensity = 'Fantasy' as
-        | 'Fantasy'
-        | 'Adventure'
-        | 'Struggle'
-        | 'Tragedy';
-      if (fantasy_count > 0) intensity = 'Fantasy';
-      else if (adventure_count > 0) intensity = 'Adventure';
-      else if (struggle_count > 0) intensity = 'Struggle';
-      else if (tragedy_count > 0) intensity = 'Tragedy';
+      let intensity = 'Fantasy' as TopicIntensity;
+      if (fantasy_count > 0) intensity = TopicIntensity['Fantasy'];
+      else if (adventure_count > 0) intensity = TopicIntensity['Adventure'];
+      else if (struggle_count > 0) intensity = TopicIntensity['Struggle'];
+      else if (tragedy_count > 0) intensity = TopicIntensity['Tragedy'];
       return { groupTopicResponse, intensity };
     });
     return intensityArray;
