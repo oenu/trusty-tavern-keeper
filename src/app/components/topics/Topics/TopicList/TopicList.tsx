@@ -19,6 +19,7 @@ import {
   TopicIntensity,
   TopicResponse,
 } from 'src/app/types/supabase-type-extensions';
+import TopicCard from '../TopicCard/TopicCard';
 
 function Topics() {
   const { group, members, fetchMembers, user } = useContext(GroupContext);
@@ -164,74 +165,27 @@ function Topics() {
 
   // Topic Cards
   const topicCards = topics.map((topic) => {
+    const isPending = pendingTopicResponses.includes(topic.id);
+    const topicResponse = topicResponses.find(
+      (topicResponse) =>
+        topicResponse.topic_id === topic.id &&
+        topicResponse.user_id === user?.id
+    );
     const topicValue = topicResponses.find(
       (topicResponse) => topicResponse.topic_id === topic.id
-    )?.intensity;
+    )?.intensity as TopicIntensity;
 
-    let topicText = 'Unknown';
-
-    switch (topicValue) {
-      case TopicIntensity.Fantasy:
-        topicText = topic.fantasy_example;
-        break;
-      case TopicIntensity.Adventure:
-        topicText = topic.adventure_example;
-        break;
-      case TopicIntensity.Struggle:
-        topicText = topic.struggle_example;
-        break;
-      case TopicIntensity.Tragedy:
-        topicText = topic.tragedy_example;
-        break;
-      default:
-        topicText = topic.fantasy_example;
-        break;
-    }
+    if (topicResponse === undefined) return null;
 
     return (
-      <Card key={topic.id}>
-        <Stack justify={'space-between'} style={{ height: '100%' }}>
-          <Stack>
-            <Group position="apart" noWrap>
-              <Title order={3}>
-                {topic.name}
-                {pendingTopicResponses.includes(topic.id) && (
-                  <Loader size={20} color="blue" />
-                )}
-              </Title>
-            </Group>
-            <Text>{topic.description}</Text>
-          </Stack>
-          <Stack align={'stretch'} justify={'space-between'}>
-            <Paper py={'md'}>
-              <Text fz="xl" ta={'center'} italic>
-                {topicText}
-              </Text>
-            </Paper>
-            <Skeleton radius="sm" visible={topicResponsesLoading}>
-              <SegmentedControl
-                fullWidth
-                transitionDuration={0}
-                disabled={
-                  topicResponsesLoading ||
-                  pendingTopicResponses.includes(topic.id)
-                }
-                value={topicValue}
-                onChange={(value) => {
-                  console.log(
-                    `Changing topic response for ${topic.name} to ${value}`
-                  );
-                  handleTopicResponse(topic.id, value as TopicIntensity);
-                }}
-                data={Object.keys(TopicIntensity).map((key) => ({
-                  label: key,
-                  value: TopicIntensity[key as keyof typeof TopicIntensity],
-                }))}
-              />
-            </Skeleton>
-          </Stack>
-        </Stack>
-      </Card>
+      <TopicCard
+        key={topic.id}
+        topic={topic}
+        topicIntensity={topicValue}
+        isPending={isPending}
+        responsesLoading={topicResponsesLoading}
+        handleTopicResponse={handleTopicResponse}
+      />
     );
   });
 

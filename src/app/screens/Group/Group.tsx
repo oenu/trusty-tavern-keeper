@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import TopicReport from 'src/app/components/topics/TopicReport/TopicReport';
-import TopicList from 'src/app/components/topics/Topics/TopicList';
+import TopicList from 'src/app/components/topics/Topics/TopicList/TopicList';
 import MemberPreview from '../../components/group/MemberPreview';
 
 // Hooks

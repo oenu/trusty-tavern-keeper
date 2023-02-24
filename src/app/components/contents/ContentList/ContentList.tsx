@@ -233,7 +233,7 @@ function ContentList() {
         <List mb={'sm'}>
           <List.Item>
             <Text>
-              <Text fw={700} span>
+              <Text fw={'bold'} span>
                 Unaffected: &nbsp;
               </Text>
               This topic does not affect me in any way.
@@ -241,7 +241,7 @@ function ContentList() {
           </List.Item>
           <List.Item>
             <Text>
-              <Text fw={700} span>
+              <Text fw={'bold'} span>
                 Neutral: &nbsp;
               </Text>
               I am comfortable with this topic in a roleplaying session.
@@ -249,7 +249,7 @@ function ContentList() {
           </List.Item>
           <List.Item>
             <Text>
-              <Text fw={700} span>
+              <Text fw={'bold'} span>
                 Warning: &nbsp;
               </Text>
               I am comfortable with this topic if it is brought up before the
@@ -276,7 +276,7 @@ function ContentList() {
           </List.Item>
           <List.Item>
             <Text>
-              <Text fw={700} span>
+              <Text fw={'bold'} span>
                 Ban: &nbsp;
               </Text>
               This topic is not allowed in my sessions.
@@ -291,7 +291,7 @@ function ContentList() {
           If a player or GM is making you feel uncomfortable, stop the game.
         </Alert>
         <Alert color={'red'}>
-          <Text fw={700} ta={'center'}>
+          <Text fw={'bold'} ta={'center'}>
             Do not play with anyone anyone who makes you feel unsafe or
             uncomfortable.
             <br />

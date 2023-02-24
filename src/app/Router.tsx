@@ -7,7 +7,7 @@ import Group from './screens/Group/Group';
 
 import Profile from './screens/Profile/Profile';
 
-import Topics from './components/topics/Topics/TopicList';
+import Topics from './components/topics/Topics/TopicList/TopicList';
 
 // Types
 import { Session } from '@supabase/supabase-js';

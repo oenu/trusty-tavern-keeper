@@ -213,7 +213,7 @@ export interface Database {
           name: string
           intensity: string
         }
-        Returns: string
+        Returns: number
       }
       elevated_insert_user_group: {
         Args: {

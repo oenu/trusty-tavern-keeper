@@ -5,25 +5,15 @@ import { Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-// Icons
-import {
-  RiGhost2Fill,
-  RiParentFill,
-  RiSkull2Fill,
-  RiUserFill,
-} from 'react-icons/ri';
-
 // Supabase
 import { supabase } from 'src/app/supabase/client';
 
 // Types
+import { IconContext } from 'react-icons/lib';
 import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
-/**
- * Dev Notes:
- * - Should be able to sort by intensity
- * - Should be able to filter by intensity
- * - Get the topics by searching for the group id where number of responses is greater than 3
- */
+
+// Utils
+import { topicIntensityIcons } from '../utils';
 
 interface GroupTopicResponse {
   topic_id: Topic['id'];
@@ -85,39 +75,29 @@ function TopicReport() {
   }) => {
     const { topic_id, topic_description, topic_name } = groupTopicResponse;
 
-    const reportContent = {
-      [TopicIntensity.Fantasy]: {
-        icon: <RiParentFill size={iconSize} />,
-        example: groupTopicResponse.fantasy_example,
-      },
-      [TopicIntensity.Adventure]: {
-        icon: <RiUserFill size={iconSize} />,
-        example: groupTopicResponse.adventure_example,
-      },
-      [TopicIntensity.Struggle]: {
-        icon: <RiGhost2Fill size={iconSize} />,
-        example: groupTopicResponse.struggle_example,
-      },
-      [TopicIntensity.Tragedy]: {
-        icon: <RiSkull2Fill size={iconSize} />,
-        example: groupTopicResponse.tragedy_example,
-      },
+    const reportExample = {
+      [TopicIntensity.Fantasy]: groupTopicResponse.fantasy_example,
+      [TopicIntensity.Adventure]: groupTopicResponse.adventure_example,
+      [TopicIntensity.Struggle]: groupTopicResponse.struggle_example,
+      [TopicIntensity.Tragedy]: groupTopicResponse.tragedy_example,
     };
 
     return (
       <Card key={topic_id}>
-        <Group noWrap>
-          {reportContent[intensity].icon}
-          <Group style={{ width: '50%' }}>
-            <Stack justify={'center'} spacing="xs">
-              <Title order={3}>{topic_name}</Title>
-              <Text italic size={'lg'}>
-                {intensity}
-              </Text>
-            </Stack>
+        <IconContext.Provider value={{ size: iconSize }}>
+          {topicIntensityIcons[intensity]}
+          <Group noWrap>
+            <Group style={{ width: '50%' }}>
+              <Stack justify={'center'} spacing="xs">
+                <Title order={3}>{topic_name}</Title>
+                <Text italic size={'lg'}>
+                  {intensity}
+                </Text>
+              </Stack>
+            </Group>
+            <Text italic>{reportExample[intensity]} </Text>
           </Group>
-          <Text italic>{reportContent[intensity].example} </Text>
-        </Group>
+        </IconContext.Provider>
       </Card>
     );
   };

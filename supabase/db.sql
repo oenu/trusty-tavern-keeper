@@ -248,7 +248,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION public.create_group(
   name TEXT,
   intensity TEXT
-) returns TEXT AS $$
+ ) returns INTEGER
+ AS $$
 DECLARE
   invite TEXT;
 BEGIN
