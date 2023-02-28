@@ -29,7 +29,6 @@ export type GetGroupSize = Database['public']['Functions']['get_group_size'];
 // Enum Types
 // NOTE: These are hardcoded because they are not able to be pulled from the database schema (in a working way)
 export enum ContentIntensity {
-  Unaffected = 'Unaffected',
   Neutral = 'Neutral',
   Warning = 'Warning',
   Ban = 'Ban',

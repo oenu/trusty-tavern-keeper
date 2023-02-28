@@ -228,23 +228,15 @@ function ContentList() {
           the GM can avoid them.
         </Text>
         <Divider my={'md'} />
-        {/* ('Unaffected', 'Neutral', 'Warning', 'Ban'); */}
-        <Text>The four options you can choose from are:</Text>
+        {/* ( 'Neutral', 'Warning', 'Ban'); */}
+        <Text>The three options you can choose from are:</Text>
         <List mb={'sm'}>
-          <List.Item>
-            <Text>
-              <Text fw={'bold'} span>
-                Unaffected: &nbsp;
-              </Text>
-              This topic does not affect me in any way.
-            </Text>
-          </List.Item>
           <List.Item>
             <Text>
               <Text fw={'bold'} span>
                 Neutral: &nbsp;
               </Text>
-              I am comfortable with this topic in a roleplaying session.
+              I am not opposed to this topic in a roleplaying session.
             </Text>
           </List.Item>
           <List.Item>

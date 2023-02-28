@@ -574,7 +574,7 @@ INSERT INTO public.content (name, description, category, emoji, default_intensit
 - Stores the user's id
 - Stores the content's name
 - Stores the content's description
-- Stores the content's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
+- Stores the content's intensity 'Neutral', 'Warning', 'Ban')
 
 This table will be used to store the contents that users create themselves
 */
@@ -606,7 +606,7 @@ USING ( auth.uid() = user_id );
 /* content_response table
 - Stores the user's id
 - Stores the content's id
-- Stores the content's intensity ('Unaffected', 'Neutral', 'Warning', 'Ban')
+- Stores the content's intensity ('Neutral', 'Warning', 'Ban')
 
 This table will be used to store the responses to the questions about the user's contents.
 Content responses are used across multiple groups (unlike topics), so they are stored in a seperate table.
