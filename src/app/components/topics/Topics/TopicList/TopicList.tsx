@@ -1,17 +1,13 @@
 import {
   Button,
-  Card,
   Group,
   Loader,
   Paper,
-  SegmentedControl,
-  Skeleton,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
 import { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { GroupContext } from 'src/app/screens/Group/Group';
 import { supabase } from 'src/app/supabase/client';
 import {
@@ -40,10 +36,6 @@ function Topics({ group_id }: { group_id: number }) {
   const hasSubmittedTopics = members?.find(
     (member) => member.discord_id === user?.discord_id
   )?.topics_submitted;
-
-  console.log('hasSubmittedTopics', hasSubmittedTopics);
-  console.log('members', members);
-  console.log('user', user);
 
   // ====================== FUNCTIONS ======================
 
@@ -97,8 +89,6 @@ function Topics({ group_id }: { group_id: number }) {
       .select('*')
       .then(({ data, error }) => {
         if (data) {
-          console.debug('Upserted topic response follows:');
-          console.debug(data);
           setTopicResponses((prevTopicResponses) => {
             const newResponses = [...prevTopicResponses];
             const index = newResponses.findIndex(
@@ -164,22 +154,19 @@ function Topics({ group_id }: { group_id: number }) {
   // Topic Cards
   const topicCards = topics.map((topic) => {
     const isPending = pendingTopicResponses.includes(topic.id);
-    const topicResponse = topicResponses.find(
-      (topicResponse) =>
-        topicResponse.topic_id === topic.id &&
-        topicResponse.user_id === user?.id
-    );
     const topicValue = topicResponses.find(
       (topicResponse) => topicResponse.topic_id === topic.id
-    )?.intensity as TopicIntensity;
+    )?.intensity;
 
-    if (topicResponse === undefined) return null;
+    // Convert topic intensity to enum
+    const topicIntensity =
+      TopicIntensity[topicValue as keyof typeof TopicIntensity];
 
     return (
       <TopicCard
         key={topic.id}
         topic={topic}
-        topicIntensity={topicValue}
+        topicIntensity={topicIntensity}
         isPending={isPending}
         responsesLoading={topicResponsesLoading}
         handleTopicResponse={handleTopicResponse}
