@@ -21,10 +21,8 @@ import {
 } from 'src/app/types/supabase-type-extensions';
 import TopicCard from '../TopicCard/TopicCard';
 
-function Topics() {
+function Topics({ group_id }: { group_id: number }) {
   const { group, members, fetchMembers, user } = useContext(GroupContext);
-
-  const group_id = group?.id;
 
   // Topics
   const [topics, setTopics] = useState<Topic[]>([]);

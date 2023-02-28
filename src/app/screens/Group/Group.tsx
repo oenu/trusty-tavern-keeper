@@ -32,6 +32,7 @@ import {
   Group as GroupType,
   User,
 } from 'src/app/types/supabase-type-extensions';
+import ContentReport from 'src/app/components/contents/ContentReport/ContentReport';
 
 // Local Types
 export type GroupMember = Pick<
@@ -51,6 +52,7 @@ export const GroupContext = createContext({
 function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Get group id from url params
   const { group_id } = useParams();
+  const group_id_int = parseInt(group_id as string) || 0;
 
   // Data States
   const [group, setGroup] = useState<GroupType | null>(null);
@@ -211,12 +213,16 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         }}
         data={[
           {
-            label: 'Survey',
+            label: 'Roleplay Survey',
             value: 'survey',
           },
           {
-            label: 'Report',
+            label: 'Roleplay Report',
             value: 'report',
+          },
+          {
+            label: 'Content Report',
+            value: 'content',
           },
         ]}
       />
@@ -247,7 +253,13 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         <GroupContext.Provider
           value={{ group, members, fetchMembers, fetchGroup, user }}
         >
-          {subRoute === 'survey' ? <TopicList /> : <TopicReport />}
+          {
+            {
+              survey: <TopicList group_id={group_id_int} />,
+              report: <TopicReport group_id={group_id_int} />,
+              content: <ContentReport group_id={group_id_int} />,
+            }[subRoute]
+          }
         </GroupContext.Provider>
       </Stack>
     );

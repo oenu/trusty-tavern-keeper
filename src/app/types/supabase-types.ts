@@ -222,6 +222,18 @@ export interface Database {
         }
         Returns: undefined
       }
+      get_group_content_responses: {
+        Args: {
+          req_group_id: number
+        }
+        Returns: {
+          content_id: number
+          content_name: string
+          content_description: string
+          content_intensity: Database["public"]["Enums"]["contentintensity"]
+          content_category: Database["public"]["Enums"]["contentcategory"]
+        }[]
+      }
       get_group_size: {
         Args: {
           req_id: number

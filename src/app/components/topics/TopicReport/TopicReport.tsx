@@ -29,12 +29,10 @@ interface GroupTopicResponse {
   tragedy_example: Topic['tragedy_example'];
 }
 
-function TopicReport() {
+function TopicReport({ group_id }: { group_id: number }) {
   const [groupTopicResponses, setGroupTopicResponses] = useState<
     GroupTopicResponse[]
   >([]);
-
-  const { group_id } = useParams<{ group_id: string }>();
 
   const iconSize = '2rem';
 
@@ -43,16 +41,9 @@ function TopicReport() {
       console.error('No group id provided, cannot fetch group topic responses');
       return;
     }
-    const group_id_int = parseInt(group_id);
-    if (isNaN(group_id_int)) {
-      console.error(
-        'Invalid group id provided, cannot fetch group topic responses'
-      );
-      return;
-    }
 
     supabase
-      .rpc('get_group_topic_responses', { req_group_id: group_id_int })
+      .rpc('get_group_topic_responses', { req_group_id: group_id })
       .then((response) => {
         if (response.error) {
           console.error(response.error);
