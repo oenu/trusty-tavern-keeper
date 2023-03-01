@@ -234,6 +234,8 @@ export interface Database {
           description: string
           intensity: Database["public"]["Enums"]["contentintensity"]
           category: Database["public"]["Enums"]["contentcategory"]
+          emoji: string
+          default_intensity: Database["public"]["Enums"]["contentintensity"]
         }[]
       }
       get_group_members: {

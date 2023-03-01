@@ -10,13 +10,19 @@ CREATE OR REPLACE FUNCTION public.get_group_content_report(req_group_id INTEGER)
     -- Content description
     intensity ContentIntensity,
     -- Intensity of the content ('Neutral', 'Warning', 'Ban') returns the highest intensity of the content
-    category ContentCategory -- Content category (Physical', 'Objects', 'Social', 'Animals', 'Death', 'Supernatural', 'Other')
+    category ContentCategory,
+    -- Content category (Physical', 'Objects', 'Social', 'Animals', 'Death', 'Supernatural', 'Other')
+    emoji TEXT,
+    -- Emoji that is displayed next to the content
+    default_intensity ContentIntensity -- Default intensity of the content ('Neutral', 'Warning', 'Ban')
   ) LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN RETURN QUERY
 SELECT c.id,
   c.name,
   c.description,
   MAX(cr.intensity) AS intensity,
-  c.category
+  c.category,
+  c.emoji,
+  c.default_intensity
 FROM public.content_response cr
   JOIN public.content c ON cr.content_id = c.id
 WHERE cr.user_id IN (

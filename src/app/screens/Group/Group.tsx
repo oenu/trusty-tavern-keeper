@@ -50,6 +50,8 @@ export const GroupContext = createContext({
 
 // Takes group from url params and fetches group data
 function Group({ getGroups }: { getGroups: () => Promise<void> }) {
+  const requiredMembers = 3;
+
   // Get group id from url params
   const { group_id } = useParams();
   const group_id_int = parseInt(group_id as string) || 0;
@@ -209,8 +211,27 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
       <SegmentedControl
         style={{ width: '100%' }}
         value={subRoute}
-        onChange={(value) => {
-          setSubRoute(value);
+        onChange={async (value) => {
+          if (!members) throw new Error('No members found');
+          // If less than 3 members have submitted a survey, do not allow user to view report
+          if (value !== 'report') {
+            setSubRoute(value);
+            return;
+          } else {
+            if (
+              members?.filter((member) => member.topics_submitted).length <
+              requiredMembers
+            ) {
+              await fetchMembers();
+
+              return members?.filter((member) => member.topics_submitted)
+                .length < requiredMembers
+                ? console.log('Not enough members have submitted a survey')
+                : setSubRoute(value);
+            } else {
+              setSubRoute(value);
+            }
+          }
         }}
         data={[
           {
@@ -220,6 +241,11 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
           {
             label: 'Roleplay Report',
             value: 'report',
+            disabled: true, // TODO: Re-enable when ready
+            // members
+            //   ? members?.filter((member) => member.topics_submitted).length >=
+            //     requiredMembers
+            //   : true,
           },
           {
             label: 'Content Report',
@@ -229,6 +255,8 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
       />
     </Paper>
   );
+
+  console.log(members?.length);
 
   // If loading, show loading message else show group info, member list, and sub
   if (loading) {
