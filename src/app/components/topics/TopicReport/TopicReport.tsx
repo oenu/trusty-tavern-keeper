@@ -43,7 +43,7 @@ function TopicReport({ group_id }: { group_id: number }) {
     }
 
     supabase
-      .rpc('get_group_topic_responses', { req_group_id: group_id })
+      .rpc('get_group_topic_report', { req_group_id: group_id })
       .then((response) => {
         if (response.error) {
           console.error(response.error);

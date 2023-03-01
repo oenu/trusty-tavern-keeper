@@ -37,19 +37,25 @@ export interface Database {
       content: {
         Row: {
           category: Database["public"]["Enums"]["contentcategory"]
+          default_intensity: Database["public"]["Enums"]["contentintensity"]
           description: string
+          emoji: string | null
           id: number
           name: string
         }
         Insert: {
           category: Database["public"]["Enums"]["contentcategory"]
+          default_intensity: Database["public"]["Enums"]["contentintensity"]
           description: string
+          emoji?: string | null
           id?: number
           name: string
         }
         Update: {
           category?: Database["public"]["Enums"]["contentcategory"]
+          default_intensity?: Database["public"]["Enums"]["contentintensity"]
           description?: string
+          emoji?: string | null
           id?: number
           name?: string
         }
@@ -165,6 +171,7 @@ export interface Database {
       }
       user: {
         Row: {
+          content_version: number
           discord_id: string
           full_name: string
           id: string
@@ -172,6 +179,7 @@ export interface Database {
           profile_picture: string
         }
         Insert: {
+          content_version?: number
           discord_id: string
           full_name: string
           id: string
@@ -179,6 +187,7 @@ export interface Database {
           profile_picture: string
         }
         Update: {
+          content_version?: number
           discord_id?: string
           full_name?: string
           id?: string
@@ -215,32 +224,32 @@ export interface Database {
         }
         Returns: number
       }
-      elevated_insert_user_group: {
-        Args: {
-          user_id: string
-          group_id: number
-        }
-        Returns: undefined
-      }
-      get_group_content_responses: {
+      get_group_content_report: {
         Args: {
           req_group_id: number
         }
         Returns: {
-          content_id: number
-          content_name: string
-          content_description: string
-          content_intensity: Database["public"]["Enums"]["contentintensity"]
-          content_category: Database["public"]["Enums"]["contentcategory"]
+          id: number
+          name: string
+          description: string
+          intensity: Database["public"]["Enums"]["contentintensity"]
+          category: Database["public"]["Enums"]["contentcategory"]
         }[]
       }
-      get_group_size: {
+      get_group_members: {
         Args: {
           req_id: number
         }
-        Returns: number
+        Returns: {
+          full_name: string
+          name: string
+          discord_id: string
+          profile_picture: string
+          is_owner: boolean
+          topics_submitted: boolean
+        }[]
       }
-      get_group_topic_responses: {
+      get_group_topic_report: {
         Args: {
           req_group_id: number
         }
@@ -258,20 +267,7 @@ export interface Database {
           tragedy_example: string
         }[]
       }
-      get_group_users: {
-        Args: {
-          req_id: number
-        }
-        Returns: {
-          full_name: string
-          name: string
-          discord_id: string
-          profile_picture: string
-          is_owner: boolean
-          topics_submitted: boolean
-        }[]
-      }
-      join_group_with_code: {
+      join_group: {
         Args: {
           invite: string
         }
@@ -293,7 +289,7 @@ export interface Database {
         | "Death"
         | "Supernatural"
         | "Other"
-      contentintensity: "Unaffected" | "Neutral" | "Warning" | "Ban"
+      contentintensity: "Neutral" | "Warning" | "Ban"
       phobiacategory:
         | "Physical"
         | "Objects"

@@ -1,47 +1,31 @@
 import { Card, Title } from '@mantine/core';
 import { PostgrestError } from '@supabase/supabase-js';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from 'src/app/supabase/client';
-import {
-  ContentCategory,
-  ContentIntensity,
-} from 'src/app/types/supabase-type-extensions';
+import { Database } from 'src/app/types/supabase-types';
 
-interface GroupContentResponse {
-  content_id: number;
-  content_name: string;
-  content_description: string;
-  content_category: ContentCategory;
-  content_intensity: ContentIntensity;
-}
+type ContentReportData =
+  Database['public']['Functions']['get_group_content_report']['Returns'][0];
 
 function ContentReport({ group_id }: { group_id: number }) {
   const [contentReportError, setContentReportError] =
     useState<PostgrestError>();
   const [contentReportData, setContentReportData] =
-    useState<GroupContentResponse[]>();
+    useState<ContentReportData[]>();
 
   const getGroupContentResponses = async () => {
     supabase
-      .rpc('get_group_content_responses', {
+      .rpc('get_group_content_report', {
         req_group_id: group_id,
       })
       .then((response) => {
-        if (response.error) setContentReportError(response.error);
+        if (response.error) {
+          console.log(response.error);
+          setContentReportError(response.error);
+        }
         if (response.data) {
           console.log(response.data);
-          // Convert to GroupContentResponse[]
-          setContentReportData(
-            response.data.map((content) => {
-              return {
-                ...content,
-                content_category: content.content_category as ContentCategory,
-                content_intensity:
-                  content.content_intensity as ContentIntensity,
-              };
-            })
-          );
-          setContentReportData(response.data as GroupContentResponse[]);
+          setContentReportData([...response.data]);
         }
       });
   };
@@ -54,17 +38,19 @@ function ContentReport({ group_id }: { group_id: number }) {
   //TODO - Handle errors better
   if (contentReportError) return <div>Could not fetch content report</div>;
 
-  // Filter out content that has a ""
+  if (!contentReportData) return <div>Loading...</div>;
 
-  return <>placeholder</>;
+  return contentReportData?.map((content) => (
+    <ContentItem key={`content-item-${content.id}`} content={content} />
+  ));
 }
 
 export default ContentReport;
 
-const ContentItem = ({ content }: { content: GroupContentResponse }) => {
+const ContentItem = ({ content }: { content: ContentReportData }) => {
   return (
     <Card>
-      <Title order={3}>{content.content_name}</Title>
+      <Title order={3}>{content.name}</Title>
     </Card>
   );
 };

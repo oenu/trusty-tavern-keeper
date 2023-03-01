@@ -34,8 +34,6 @@ function TopicCard({
     [TopicIntensity.Struggle]: topic.struggle_example,
     [TopicIntensity.Tragedy]: topic.tragedy_example,
   };
-  console.log({ topicText });
-
   return (
     <Card key={topic.id}>
       <Stack justify={'space-between'} style={{ height: '100%' }}>

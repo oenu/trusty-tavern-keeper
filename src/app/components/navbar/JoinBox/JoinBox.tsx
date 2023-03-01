@@ -32,7 +32,7 @@ function JoinBox({ getGroups }: { getGroups: () => Promise<void> }) {
         variant="outline"
         disabled={text.length !== 6}
         onClick={async () => {
-          const { data, error } = await supabase.rpc('join_group_with_code', {
+          const { data, error } = await supabase.rpc('join_group', {
             invite: text,
           }); // Returns the group id if successful
 

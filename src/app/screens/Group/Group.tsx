@@ -73,7 +73,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
 
   const fetchMembers = async () => {
     if (group_id === undefined) throw new Error('No group id provided');
-    const { data, error } = await supabase.rpc('get_group_users', {
+    const { data, error } = await supabase.rpc('get_group_members', {
       req_id: parseInt(group_id),
     });
     console.log(data);
@@ -130,6 +130,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
           full_name: data.user.user_metadata.full_name,
           name: data.user.user_metadata.name,
           profile_picture: data.user.user_metadata.profile_picture,
+          content_version: 0, //TODO add content version to user
         });
       }
     }
