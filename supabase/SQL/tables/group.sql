@@ -16,16 +16,6 @@ CREATE TABLE public.group (
 ALTER TABLE public.group ENABLE ROW LEVEL SECURITY;
 
 -- Group Policies
-CREATE POLICY "Groups are viewable by users who are members of the group." ON "group" FOR
-SELECT USING (
-    EXISTS (
-      SELECT 1
-      FROM public.user_group
-      WHERE user_id = auth.uid()
-        AND group_id = id
-    )
-  );
-
 CREATE POLICY "Groups are viewable by users who created them." ON "group" FOR
 SELECT USING (auth.uid() = owner);
 

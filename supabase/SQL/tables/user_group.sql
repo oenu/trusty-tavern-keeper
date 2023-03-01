@@ -11,6 +11,15 @@ CREATE TABLE public.user_group (
 ALTER TABLE public.user_group ENABLE ROW LEVEL SECURITY;
 
 -- User_Group Policies
+CREATE POLICY "Groups are viewable by users who are members of the group." ON "group" FOR
+SELECT USING (
+    EXISTS (
+      SELECT 1
+      FROM public.user_group
+      WHERE user_id = auth.uid()
+        AND group_id = id
+    )
+  );
 CREATE POLICY "Users can insert themselves into a group." ON "user_group" FOR
 INSERT WITH CHECK (auth.uid() = user_id);
 

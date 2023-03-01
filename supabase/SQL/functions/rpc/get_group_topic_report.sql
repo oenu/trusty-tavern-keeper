@@ -1,4 +1,4 @@
-/* Function: get_group_topic_responses
+/* Function: get_group_topic_report
  * Description: Gets all topic responses for a group
  * Parameters:
  *   req_group_id INTEGER: The group id
@@ -17,7 +17,7 @@
  * Security:
  *   SECURITY DEFINER
  */
-CREATE OR REPLACE FUNCTION public.get_group_topic_responses(req_group_id INTEGER) RETURNS TABLE (
+CREATE OR REPLACE FUNCTION public.get_group_topic_report(req_group_id INTEGER) RETURNS TABLE (
     topic_id INTEGER,
     topic_name TEXT,
     topic_description TEXT,

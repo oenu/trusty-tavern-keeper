@@ -1,5 +1,6 @@
 /* Function: on_leave_group
- * Description: Deletes all topic responses for a user when they leave a group
+ * Description: Deletes all data associated with users membership in a group when they leave
+ * Should also handle if the owner leaves the group
  * Parameters:
  *   NONE
  * Returns:
@@ -7,37 +8,30 @@
  * Security:
  *   SECURITY DEFINER
  */
-CREATE OR REPLACE FUNCTION public.delete_topic_responses_on_leave_group() RETURNS TRIGGER AS $$ BEGIN
+CREATE OR REPLACE FUNCTION public.on_leave_group() RETURNS TRIGGER AS $$ BEGIN IF OLD.user_id = (
+    SELECT owner
+    FROM public.group
+    WHERE id = OLD.group_id
+  ) THEN -- Delete the group
+DELETE FROM public.group
+WHERE id = OLD.group_id;
+-- Delete all user_group entries
+DELETE FROM public.user_group
+WHERE group_id = OLD.group_id;
+-- Delete all topic_responses
 DELETE FROM public.topic_response
-WHERE user_id = auth.uid()
+WHERE group_id = OLD.group_id;
+
+ELSE -- Delete all topic_responses
+DELETE FROM public.topic_response
+WHERE user_id = OLD.user_id
   AND group_id = OLD.group_id;
+END IF;
+
 RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER delete_topic_responses_on_leave_group
-AFTER DELETE ON public.user_group FOR EACH ROW EXECUTE PROCEDURE public.delete_topic_responses_on_leave_group();
 
-
-/* Function: delete_group_on_owner_leave
- * Description: Deletes a group when the owner leaves it
- * Parameters:
- *   NONE
- * Returns:
- *   NONE
- * Security:
- *   SECURITY DEFINER
- */
-CREATE FUNCTION public.delete_group_on_owner_leave() RETURNS TRIGGER language plpgsql SECURITY DEFINER
-SET search_path = public AS $$ BEGIN
-DELETE FROM public.group
-WHERE id = old.group_id
-  AND owner = old.user_id;
-DELETE FROM public.user_group
-WHERE group_id = old.group_id;
-RETURN old;
-END;
-$$;
-
-CREATE TRIGGER on_owner_leaves_group
-AFTER DELETE ON public.user_group FOR EACH ROW EXECUTE PROCEDURE public.delete_group_on_owner_leave();
+CREATE TRIGGER on_leave_group
+AFTER DELETE ON public.user_group FOR EACH ROW EXECUTE PROCEDURE public.on_leave_group();

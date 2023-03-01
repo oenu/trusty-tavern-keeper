@@ -1,33 +1,39 @@
-CREATE FUNCTION public.handle_new_user() RETURNS TRIGGER language plpgsql SECURITY DEFINER
-SET search_path = public AS $$ BEGIN
-INSERT INTO public.user (id, full_name, name, discord_id, profile_picture)
+/* Function: on_register
+ * Description: Adds a new user to the user table when they register, and adds default content responses
+ * Parameters:
+ *   NONE
+ * Returns:
+ *   NONE
+ * Security:
+ *   SECURITY DEFINER
+ */
+CREATE OR REPLACE FUNCTION public.on_register() RETURNS TRIGGER language plpgsql SECURITY DEFINER
+SET search_path = public AS $$ BEGIN -- Insert the user into the user table
+INSERT INTO public.user (
+    id,
+    full_name,
+    name,
+    discord_id,
+    profile_picture
+  )
 VALUES (
-    new.id,
-    new.raw_user_meta_data->>'full_name',
-    new.raw_user_meta_data->>'name',
-    new.raw_user_meta_data->>'provider_id',
-    new.raw_user_meta_data->>'avatar_url'
+    NEW.id,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'name',
+    NEW.raw_user_meta_data->>'provider_id',
+    NEW.raw_user_meta_data->>'avatar_url'
   );
-RETURN new;
-END;
-$$;
-CREATE TRIGGER on_auth_user_created
-AFTER
-INSERT ON auth.users FOR each ROW EXECUTE PROCEDURE public.handle_new_user();
 
-
-CREATE OR REPLACE FUNCTION public.add_default_content_responses() RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public AS $$ BEGIN
+-- Insert default content responses
 INSERT INTO public.content_response (user_id, content_id, intensity)
 SELECT NEW.id,
   content.id,
   content.default_intensity
 FROM public.content content;
-
-    RETURN NEW;
+RETURN NEW;
 END;
 $$;
 
-CREATE TRIGGER add_default_content_responses
+CREATE TRIGGER on_register
 AFTER
-INSERT ON public.user FOR EACH ROW EXECUTE PROCEDURE public.add_default_content_responses();
+INSERT ON auth.users FOR each ROW EXECUTE PROCEDURE public.on_register();

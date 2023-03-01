@@ -1,4 +1,4 @@
-/* Function: get_group_users
+/* Function: get_group_members
  * Description: Gets all users in a group
  * Parameters:
  *   req_id INTEGER: The group id
@@ -12,7 +12,7 @@
  * Security:
  *   SECURITY DEFINER
  */
-CREATE OR REPLACE FUNCTION public.get_group_users(req_id INTEGER) RETURNS TABLE (
+CREATE OR REPLACE FUNCTION public.get_group_members(req_id INTEGER) RETURNS TABLE (
     full_name TEXT,
     name TEXT,
     discord_id TEXT,
