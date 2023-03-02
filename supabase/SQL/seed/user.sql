@@ -23,6 +23,8 @@ VALUES (
     '2023-02-06 10:44:44.461272+00'
   );
 
+
+
 -- Seed a new group for the test user
 INSERT INTO public.group (name, invite_code, initial_intensity, owner)
 VALUES (
@@ -33,20 +35,33 @@ VALUES (
   );
 
 -- Seed data for the user_group table
-INSERT INTO public.user_group (user_id, group_id)
+INSERT INTO public.user_group (user_id, group_id, topics_submitted)
 VALUES (
     '00000000-0000-0000-0000-000000000000',
     (
       SELECT id
       FROM public.group
       WHERE invite_code = '123456'
-    )
+    ),
+    TRUE
   );
+
+
 -- Seed Data for the topic_response table
+-- Lowest intensity to check that it overrides intensities for other users 
 INSERT INTO public.topic_response (user_id, topic_id, group_id, intensity)
 VALUES (
     '00000000-0000-0000-0000-000000000000',
     1,
     1,
     'Fantasy'
+  );
+
+-- Highest intensity to check that it is overridden by the lowest intensity
+INSERT INTO public.topic_response (user_id, topic_id, group_id, intensity)
+VALUES (
+    '00000000-0000-0000-0000-000000000000',
+    2,
+    1,
+    'Tragedy'
   );
