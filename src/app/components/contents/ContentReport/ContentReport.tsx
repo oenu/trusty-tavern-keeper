@@ -2,13 +2,10 @@ import {
   Accordion,
   Card,
   Group,
-  HoverCard,
   Loader,
-  Popover,
   SimpleGrid,
   Text,
   Title,
-  UnstyledButton,
 } from '@mantine/core';
 import { PostgrestError } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
@@ -83,21 +80,12 @@ function ContentReport({ group_id }: { group_id: number }) {
         spacing="md"
       >
         {contentArray.map((content) => (
-          // <UnstyledButton key={content.id}>
           <Card key={content.id}>
-            {/* <Popover withinPortal> */}
-            {/* <Popover.Target> */}
             <Group>
               <Text>{content.emoji}</Text>
               <Title order={5}>{content.name}</Title>
             </Group>
-            {/* </Popover.Target> */}
-            {/* <Popover.Dropdown> */}
-            {/* <Text>{content.description}</Text> */}
-            {/* </Popover.Dropdown> */}
-            {/* </Popover> */}
           </Card>
-          // </UnstyledButton>
         ))}
       </SimpleGrid>
     );
