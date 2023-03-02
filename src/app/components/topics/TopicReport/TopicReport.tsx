@@ -1,33 +1,19 @@
-// Topic report
-// Generated from each of the topic responses in the group,
-// Will only be shown once 3 or more responses have been submitted (anonymity)
+// Components
+import { Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
 
-import {
-  Box,
-  Card,
-  Container,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  Title,
-} from '@mantine/core';
+// Hooks
 import { useEffect, useState } from 'react';
-import {
-  RiGhost2Fill,
-  RiParentFill,
-  RiSkull2Fill,
-  RiUserFill,
-} from 'react-icons/ri';
-import { supabase } from 'src/app/supabase/client';
-import { Topic } from 'src/app/types/supabase-type-extensions';
+import { useParams } from 'react-router-dom';
 
-/**
- * Dev Notes:
- * - Should be able to sort by intensity
- * - Should be able to filter by intensity
- * - Get the topics by searching for the group id where number of responses is greater than 3
- */
+// Supabase
+import { supabase } from 'src/app/supabase/client';
+
+// Types
+import { IconContext } from 'react-icons/lib';
+import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
+
+// Utils
+import { topicIntensityIcons } from '../utils';
 
 interface GroupTopicResponse {
   topic_id: Topic['id'];
@@ -43,7 +29,7 @@ interface GroupTopicResponse {
   tragedy_example: Topic['tragedy_example'];
 }
 
-function TopicReport() {
+function TopicReport({ group_id }: { group_id: number }) {
   const [groupTopicResponses, setGroupTopicResponses] = useState<
     GroupTopicResponse[]
   >([]);
@@ -51,8 +37,13 @@ function TopicReport() {
   const iconSize = '2rem';
 
   useEffect(() => {
+    if (!group_id) {
+      console.error('No group id provided, cannot fetch group topic responses');
+      return;
+    }
+
     supabase
-      .rpc('get_group_topic_responses', { req_group_id: 1 }) // TODO: Replace with group id
+      .rpc('get_group_topic_report', { req_group_id: group_id })
       .then((response) => {
         if (response.error) {
           console.error(response.error);
@@ -63,6 +54,7 @@ function TopicReport() {
           setGroupTopicResponses(response.data);
         }
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const reportItem = ({
@@ -70,44 +62,33 @@ function TopicReport() {
     intensity,
   }: {
     groupTopicResponse: GroupTopicResponse;
-    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
+    intensity: TopicIntensity;
   }) => {
     const { topic_id, topic_description, topic_name } = groupTopicResponse;
-    let selectedExample = ''; // Example of the topic
-    let selectedIcon = <RiParentFill size={iconSize} />; // Icon to show the intensity
-    switch (intensity) {
-      case 'Fantasy':
-        selectedIcon = <RiParentFill size={iconSize} />;
-        selectedExample = groupTopicResponse.fantasy_example;
-        break;
-      case 'Adventure':
-        selectedIcon = <RiUserFill size={iconSize} />;
-        selectedExample = groupTopicResponse.adventure_example;
-        break;
-      case 'Struggle':
-        selectedIcon = <RiGhost2Fill size={iconSize} />;
-        selectedExample = groupTopicResponse.struggle_example;
-        break;
-      case 'Tragedy':
-        selectedIcon = <RiSkull2Fill size={iconSize} />;
-        selectedExample = groupTopicResponse.tragedy_example;
-        break;
-    }
+
+    const reportExample = {
+      [TopicIntensity.Fantasy]: groupTopicResponse.fantasy_example,
+      [TopicIntensity.Adventure]: groupTopicResponse.adventure_example,
+      [TopicIntensity.Struggle]: groupTopicResponse.struggle_example,
+      [TopicIntensity.Tragedy]: groupTopicResponse.tragedy_example,
+    };
 
     return (
       <Card key={topic_id}>
-        <Group noWrap>
-          {selectedIcon}
-          <Group style={{ width: '50%' }}>
-            <Stack justify={'center'} spacing="xs">
-              <Title order={3}>{topic_name}</Title>
-              <Text italic size={'lg'}>
-                {intensity}
-              </Text>
-            </Stack>
+        <IconContext.Provider value={{ size: iconSize }}>
+          {topicIntensityIcons[intensity]}
+          <Group noWrap>
+            <Group style={{ width: '50%' }}>
+              <Stack justify={'center'} spacing="xs">
+                <Title order={3}>{topic_name}</Title>
+                <Text italic size={'lg'}>
+                  {intensity}
+                </Text>
+              </Stack>
+            </Group>
+            <Text italic>{reportExample[intensity]} </Text>
           </Group>
-          <Text italic>{selectedExample} </Text>
-        </Group>
+        </IconContext.Provider>
       </Card>
     );
   };
@@ -116,20 +97,16 @@ function TopicReport() {
     groupTopicResponses: GroupTopicResponse[]
   ): {
     groupTopicResponse: GroupTopicResponse;
-    intensity: 'Fantasy' | 'Adventure' | 'Struggle' | 'Tragedy';
+    intensity: TopicIntensity;
   }[] => {
     const intensityArray = groupTopicResponses.map((groupTopicResponse) => {
       const { fantasy_count, adventure_count, struggle_count, tragedy_count } =
         groupTopicResponse;
-      let intensity = 'Fantasy' as
-        | 'Fantasy'
-        | 'Adventure'
-        | 'Struggle'
-        | 'Tragedy';
-      if (fantasy_count > 0) intensity = 'Fantasy';
-      else if (adventure_count > 0) intensity = 'Adventure';
-      else if (struggle_count > 0) intensity = 'Struggle';
-      else if (tragedy_count > 0) intensity = 'Tragedy';
+      let intensity = 'Fantasy' as TopicIntensity;
+      if (fantasy_count > 0) intensity = TopicIntensity['Fantasy'];
+      else if (adventure_count > 0) intensity = TopicIntensity['Adventure'];
+      else if (struggle_count > 0) intensity = TopicIntensity['Struggle'];
+      else if (tragedy_count > 0) intensity = TopicIntensity['Tragedy'];
       return { groupTopicResponse, intensity };
     });
     return intensityArray;

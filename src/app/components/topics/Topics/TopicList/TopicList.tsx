@@ -1,48 +1,60 @@
 import {
   Button,
-  Card,
   Group,
   Loader,
   Paper,
-  SegmentedControl,
-  Skeleton,
   Stack,
   Text,
   Title,
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { GroupContext } from 'src/app/screens/Group/Group';
 import { supabase } from 'src/app/supabase/client';
 import {
   Topic,
   TopicIntensity,
   TopicResponse,
 } from 'src/app/types/supabase-type-extensions';
+import TopicCard from '../TopicCard/TopicCard';
 
-function Topics() {
-  // Get current user
+function Topics({ group_id }: { group_id: number }) {
+  const { fetchMembers } = useContext(GroupContext);
 
-  // Get group id from url params
-  const { group_id } = useParams();
-
-  // Data states
+  // Topics
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [topicResponses, setTopicResponses] = useState<TopicResponse[]>([]);
-  const [hasSubmittedTopics, setHasSubmittedTopics] = useState<boolean>(false);
+  const [topicsLoading, setTopicsLoading] = useState<boolean>(true);
+  const [topicsError, setTopicsError] = useState<string | null>(null);
 
-  // Loading states
+  // Topic Responses
+  const [topicResponses, setTopicResponses] = useState<TopicResponse[]>([]);
   const [topicResponsesLoading, setTopicResponsesLoading] =
     useState<boolean>(true);
-  const [topicsLoading, setTopicsLoading] = useState<boolean>(true);
   const [pendingTopicResponses, setPendingTopicResponses] = useState<number[]>(
     []
   );
 
-  // Error states
-  // const [topicResponsesError, setTopicResponsesError] = useState<string | null>(
-  // null
-  // );
-  const [topicsError, setTopicsError] = useState<string | null>(null);
+  const [hasSubmittedTopics, setHasSubmittedTopics] = useState<boolean>(false);
+
+  // ====================== FUNCTIONS ======================
+
+  /**
+   * Get user and check if they have submitted topics
+   * @returns {Promise<void>}
+   */
+
+  const fetchUser = async (): Promise<void> => {
+    const user = (await supabase.auth.getUser())?.data;
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('user_group')
+      .select('topics_submitted')
+      .eq('user_id', user.user?.id)
+      .eq('group_id', group_id);
+    error && console.error(error);
+    data && data[0] && data[0].topics_submitted
+      ? setHasSubmittedTopics(true)
+      : setHasSubmittedTopics(false);
+  };
 
   /**
    * Handle Topic Response
@@ -86,7 +98,7 @@ function Topics() {
     supabase
       .from('topic_response')
       .upsert({
-        group_id: parseInt(group_id),
+        group_id,
         user_id,
         topic_id,
         intensity,
@@ -94,8 +106,6 @@ function Topics() {
       .select('*')
       .then(({ data, error }) => {
         if (data) {
-          console.debug('Upserted topic response follows:');
-          console.debug(data);
           setTopicResponses((prevTopicResponses) => {
             const newResponses = [...prevTopicResponses];
             const index = newResponses.findIndex(
@@ -123,20 +133,7 @@ function Topics() {
       });
   };
 
-  const fetchSubmittedStatus = async (group_id: number) => {
-    const user_id = (await supabase.auth.getUser()).data.user?.id;
-    if (!user_id) console.error('No user id, this should not happen');
-    else {
-      supabase
-        .from('user_group')
-        .select('*')
-        .match({ user_id, group_id })
-        .then(({ data, error }) => {
-          data && setHasSubmittedTopics(data[0].topics_submitted);
-          error && console.error(error);
-        });
-    }
-  };
+  // ====================== EFFECTS ======================
 
   // Fetch topics and topic responses
   useEffect(() => {
@@ -147,12 +144,14 @@ function Topics() {
       return;
     }
 
+    fetchUser();
+
     // Fetch topics and topic responses
-    fetchTopics(parseInt(group_id))
+    fetchTopics(group_id)
       .then((topics: Topic[]) => {
         setTopics(topics);
         setTopicsLoading(false);
-        fetchTopicResponses(parseInt(group_id))
+        fetchTopicResponses(group_id)
           .then((topicResponses: TopicResponse[]) => {
             setTopicResponses(topicResponses);
             setTopicResponsesLoading(false);
@@ -166,88 +165,68 @@ function Topics() {
         setTopicsError(error.message);
       });
 
-    fetchSubmittedStatus(parseInt(group_id));
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [group_id]);
+
+  // ====================== RENDER ======================
 
   // Topic Cards
   const topicCards = topics.map((topic) => {
+    const isPending = pendingTopicResponses.includes(topic.id);
     const topicValue = topicResponses.find(
       (topicResponse) => topicResponse.topic_id === topic.id
     )?.intensity;
 
-    let topicText = 'Unknown';
-
-    switch (topicValue) {
-      case TopicIntensity.Fantasy:
-        topicText = topic.fantasy_example;
-        break;
-      case TopicIntensity.Adventure:
-        topicText = topic.adventure_example;
-        break;
-      case TopicIntensity.Struggle:
-        topicText = topic.struggle_example;
-        break;
-      case TopicIntensity.Tragedy:
-        topicText = topic.tragedy_example;
-        break;
-      default:
-        topicText = topic.fantasy_example;
-        break;
-    }
+    // Convert topic intensity to enum
+    const topicIntensity =
+      TopicIntensity[topicValue as keyof typeof TopicIntensity];
 
     return (
-      <Card key={topic.id}>
-        <Stack justify={'space-between'} style={{ height: '100%' }}>
-          <Stack>
-            <Group position="apart" noWrap>
-              <Title order={3}>
-                {topic.name}
-                {pendingTopicResponses.includes(topic.id) && (
-                  <Loader size={20} color="blue" />
-                )}
-              </Title>
-            </Group>
-            <Text>{topic.description}</Text>
-          </Stack>
-          <Stack align={'stretch'} justify={'space-between'}>
-            <Paper py={'md'}>
-              <Text fz="xl" ta={'center'} italic>
-                {topicText}
-              </Text>
-            </Paper>
-            <Skeleton radius="sm" visible={topicResponsesLoading}>
-              <SegmentedControl
-                fullWidth
-                transitionDuration={0}
-                disabled={
-                  topicResponsesLoading ||
-                  pendingTopicResponses.includes(topic.id)
-                }
-                value={topicValue}
-                onChange={(value) => {
-                  console.log(
-                    `Changing topic response for ${topic.name} to ${value}`
-                  );
-                  handleTopicResponse(topic.id, value as TopicIntensity);
-                }}
-                data={Object.keys(TopicIntensity).map((key) => ({
-                  label: key,
-                  value: TopicIntensity[key as keyof typeof TopicIntensity],
-                }))}
-              />
-            </Skeleton>
-          </Stack>
-        </Stack>
-      </Card>
+      <TopicCard
+        key={topic.id}
+        topic={topic}
+        topicIntensity={topicIntensity}
+        isPending={isPending}
+        responsesLoading={topicResponsesLoading}
+        handleTopicResponse={handleTopicResponse}
+      />
     );
   });
 
   return (
     <Paper p="md">
       <Stack>
-        <Title order={2}>Topic Questions</Title>
+        <Group position="apart">
+          <Title order={2}>Topic Questions</Title>
+          <Button
+            color={hasSubmittedTopics ? 'red' : 'blue'}
+            onClick={async () => {
+              // Verify that the group id is defined
+              if (group_id === undefined) {
+                console.error('No group id provided');
+                return;
+              }
+
+              // Check if the user is logged in
+              const user_id = (await supabase.auth.getUser()).data.user?.id;
+              if (user_id === undefined) {
+                console.error('No user id provided');
+                return;
+              }
+
+              // Handle empty topic responses (assume fantasy)
+              await submitEmptyTopicResponses(group_id);
+              // Toggle the topics submitted state
+              await toggleTopicsSubmittedState(group_id);
+
+              // Fetch the user and members
+              await fetchUser();
+              if (fetchMembers) await fetchMembers();
+            }}
+          >
+            {hasSubmittedTopics ? 'Withdraw Response' : 'Submit Response'}
+          </Button>
+        </Group>
         {topicsLoading ? (
           <Loader size={20} color="blue" />
         ) : topicsError ? (
@@ -255,30 +234,6 @@ function Topics() {
         ) : (
           <Stack>{topicCards}</Stack>
         )}
-
-        <Button
-          color={hasSubmittedTopics ? 'red' : 'blue'}
-          onClick={async () => {
-            if (group_id === undefined) {
-              console.error('No group id provided');
-              return;
-            }
-
-            const user_id = (await supabase.auth.getUser()).data.user?.id;
-
-            if (user_id === undefined) {
-              console.error('No user id provided');
-              return;
-            }
-
-            await submitEmptyTopicResponses(parseInt(group_id));
-            await toggleTopicsSubmittedState(parseInt(group_id));
-
-            await fetchSubmittedStatus(parseInt(group_id));
-          }}
-        >
-          {hasSubmittedTopics ? 'Withdraw Response' : 'Submit Response'}
-        </Button>
       </Stack>
     </Paper>
   );

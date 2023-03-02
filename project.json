@@ -8,6 +8,30 @@
       "command": "supabase gen types typescript --linked > src/app/types/supabase-types.ts"
     },
 
+    "combine-sql": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "echo 'Combining SQL files into one file'",
+          "echo 'Combining Tables'",
+          "cat SQL/tables/user.sql SQL/tables/group.sql SQL/tables/topic.sql SQL/tables/content.sql SQL/tables/user_group.sql SQL/tables/topic_response.sql SQL/tables/content_response.sql SQL/tables/custom_content.sql  > .temp/tables.sql",
+          "echo 'Combining Functions'",
+          "cat SQL/functions/trigger/*.sql > .temp/trigger-functions.sql",
+          "cat SQL/functions/rpc/*.sql > .temp/rpc-functions.sql",
+          "cat .temp/trigger-functions.sql .temp/rpc-functions.sql > .temp/functions.sql",
+          "echo 'Combining Seed Data'",
+          "cat SQL/seed/content.sql SQL/seed/topic.sql SQL/seed/user.sql > .temp/seed.sql",
+          "echo 'Combining Remaining SQL'",
+          "cat SQL/enums.sql .temp/tables.sql .temp/functions.sql .temp/seed.sql > ./db.sql",
+          "echo 'Done!'",
+          "echo 'If you need to delete the existing database run the SQL found in ./supabase/SQL/drop.sql This can be useful if you are changing return types of functions or changing the structure of tables.'",
+          "echo 'To push these changes run the db.sql file in the supabase admin panel or via a postgres client.'"
+        ],
+        "cwd": "./supabase/",
+        "parallel": false
+      }
+    },
+
     "build": {
       "executor": "@nrwl/vite:build",
       "outputs": ["{options.outputPath}"],

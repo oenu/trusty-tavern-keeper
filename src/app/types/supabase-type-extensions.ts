@@ -17,19 +17,14 @@ export type TopicResponse =
 // Function Types
 // Active
 export type CreateGroup = Database['public']['Functions']['create_group'];
-export type GetGroupUsers = Database['public']['Functions']['get_group_users'];
-export type JoinGroupWithCode =
-  Database['public']['Functions']['join_group_with_code'];
+export type GetGroupMembers =
+  Database['public']['Functions']['get_group_members'];
+export type JoinGroup = Database['public']['Functions']['join_group'];
 export type LeaveGroup = Database['public']['Functions']['leave_group'];
-// Inactive
-export type ElevatedInsertUserGroup =
-  Database['public']['Functions']['elevated_insert_user_group'];
-export type GetGroupSize = Database['public']['Functions']['get_group_size'];
 
 // Enum Types
 // NOTE: These are hardcoded because they are not able to be pulled from the database schema (in a working way)
 export enum ContentIntensity {
-  Unaffected = 'Unaffected',
   Neutral = 'Neutral',
   Warning = 'Warning',
   Ban = 'Ban',

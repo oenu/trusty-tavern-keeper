@@ -1,8 +1,8 @@
 // Components
 import {
   ActionIcon,
+  Alert,
   Button,
-  Card,
   Container,
   CopyButton,
   Divider,
@@ -14,11 +14,13 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import TopicReport from 'src/app/components/topics/TopicReport/TopicReport';
+import TopicList from 'src/app/components/topics/Topics/TopicList/TopicList';
 import MemberPreview from '../../components/group/MemberPreview';
 
 // Hooks
-import { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { createContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Icons
 import { RxCheck, RxClipboard } from 'react-icons/rx';
@@ -31,8 +33,7 @@ import {
   Group as GroupType,
   User,
 } from 'src/app/types/supabase-type-extensions';
-// import TopicReport from '../../components/topics/TopicReport/TopicReport';
-// import TopicList from '../../components/topics/Topics/TopicList';
+import ContentReport from 'src/app/components/contents/ContentReport/ContentReport';
 
 // Local Types
 export type GroupMember = Pick<
@@ -40,16 +41,31 @@ export type GroupMember = Pick<
   'full_name' | 'name' | 'profile_picture' | 'discord_id'
 > & { is_owner: boolean; topics_submitted: boolean };
 
+export const GroupContext = createContext({
+  group: null as GroupType | null,
+  members: null as GroupMember[] | null,
+  // user: null as User | null,
+  fetchMembers: null as (() => Promise<void>) | null,
+  fetchGroup: null as (() => Promise<void>) | null,
+});
+
 // Takes group from url params and fetches group data
 function Group({ getGroups }: { getGroups: () => Promise<void> }) {
+  const requiredMembers = 2;
+
   // Get group id from url params
   const { group_id } = useParams();
+  const group_id_int = parseInt(group_id as string) || 0;
 
-  // Set up state
+  // Data States
   const [group, setGroup] = useState<GroupType | null>(null);
   const [members, setMembers] = useState<GroupMember[] | null>(null);
-  const [groupError, setGroupError] = useState<string | null>(null);
+  // const [user, setUser] = useState<User | null>(null);
+  const [enoughReports, setEnoughReports] = useState<boolean>(false);
+
+  // Logic States
   const [loading, setLoading] = useState<boolean>(true);
+  const [groupError, setGroupError] = useState<string | null>(null);
 
   // Outlet State
   const [subRoute, setSubRoute] = useState<string>('');
@@ -57,14 +73,23 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Navigate Hook
   const navigate = useNavigate();
 
-  const fetchMembers = async (): Promise<GroupMember[] | null> => {
+  // ====================== FUNCTIONS ======================
+
+  const fetchMembers = async () => {
     if (group_id === undefined) throw new Error('No group id provided');
-    const { data, error } = await supabase.rpc('get_group_users', {
+    const { data, error } = await supabase.rpc('get_group_members', {
       req_id: parseInt(group_id),
     });
     console.log(data);
-    if (data) return data;
-    else throw new Error('Could not fetch members' + error?.message);
+    if (data) {
+      setMembers(data);
+
+      // Check if there are enough reports
+      const enoughReports =
+        data.filter((member) => member.topics_submitted).length >=
+        requiredMembers;
+      setEnoughReports(enoughReports);
+    } else throw new Error('Could not fetch members' + error?.message);
   };
 
   const fetchGroup = async () => {
@@ -88,8 +113,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
       } else {
         setGroup(data[0]);
         try {
-          const members = await fetchMembers();
-          setMembers(members);
+          await fetchMembers();
         } catch (error) {
           console.log(error);
           setGroupError('Could not fetch members');
@@ -99,14 +123,15 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
     }
   };
 
+  // ====================== EFFECTS ======================
+
   useEffect(() => {
+    setSubRoute('survey');
     fetchGroup();
-
-    // Set sub route so the selected tab is highlighted
-    setSubRoute(window.location.pathname.split('/')[3]);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group_id]);
+
+  // ====================== RENDER ======================
 
   // Group page header with group name, leave button, and invite code
   const groupInfo = (
@@ -166,28 +191,52 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Segmented control for switching between survey and report pages
   const subPageControl = (
     <Paper style={{ width: '100%' }} p="xs">
+      {members &&
+      members?.filter((member) => member.topics_submitted).length <
+        requiredMembers ? (
+        <Alert color="red" title="Not enough members have submitted a survey">
+          You must have at least {requiredMembers} members submit a survey
+          before you can view the report.
+        </Alert>
+      ) : null}
+
       <SegmentedControl
         style={{ width: '100%' }}
         value={subRoute}
-        onChange={(value) => {
-          navigate(`/group/${group_id}/${value}`);
-          setSubRoute(value);
+        onChange={async (value) => {
+          if (!members) throw new Error('No members found');
+          // If less than 3 members have submitted a survey, do not allow user to view report
+          if (value !== 'report') {
+            setSubRoute(value);
+            return;
+          } else {
+            if (enoughReports) {
+              await fetchMembers();
+              if (enoughReports) setSubRoute(value);
+              else console.log('Not enough reports'); //TODO show alert
+            } else setSubRoute(value);
+          }
         }}
         data={[
           {
-            label: 'Survey',
-            value: '',
+            label: 'Roleplay Survey',
+            value: 'survey',
           },
           {
-            label: 'Report',
+            label: 'Roleplay Report',
             value: 'report',
+            disabled: !enoughReports,
+          },
+          {
+            label: 'Content Report',
+            value: 'content',
           },
         ]}
       />
     </Paper>
   );
 
-  // If loading, show loading message else show group info, member list, and sub pages with controls
+  // If loading, show loading message else show group info, member list, and sub
   if (loading) {
     return <Container size="sm">Loading...</Container>;
   } else if (groupError) {
@@ -207,7 +256,18 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
           </Stack>
         </Paper>
         {subPageControl}
-        <Outlet />
+
+        <GroupContext.Provider
+          value={{ group, members, fetchMembers, fetchGroup }}
+        >
+          {
+            {
+              survey: <TopicList group_id={group_id_int} />,
+              report: <TopicReport group_id={group_id_int} />,
+              content: <ContentReport group_id={group_id_int} />,
+            }[subRoute]
+          }
+        </GroupContext.Provider>
       </Stack>
     );
   }
