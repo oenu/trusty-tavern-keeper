@@ -100,22 +100,22 @@ export interface Database {
       group: {
         Row: {
           id: number
-          initial_intensity: Database["public"]["Enums"]["topicintensity"]
           invite_code: string
+          max_intensity: Database["public"]["Enums"]["topicintensity"]
           name: string
           owner: string
         }
         Insert: {
           id?: number
-          initial_intensity: Database["public"]["Enums"]["topicintensity"]
           invite_code: string
+          max_intensity: Database["public"]["Enums"]["topicintensity"]
           name: string
           owner: string
         }
         Update: {
           id?: number
-          initial_intensity?: Database["public"]["Enums"]["topicintensity"]
           invite_code?: string
+          max_intensity?: Database["public"]["Enums"]["topicintensity"]
           name?: string
           owner?: string
         }

@@ -41,6 +41,7 @@ function IntensityExample({ intensity }: { intensity: TopicIntensity }) {
       isPending={false}
       responsesLoading={false}
       topicIntensity={intensity}
+      maxIntensity={intensity}
       handleTopicResponse={() => {
         // do nothing
       }}

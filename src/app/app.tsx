@@ -17,6 +17,9 @@ const StyledApp = styled.div`
 export const SessionContext = createContext<Session | null>(null);
 export const GroupContext = createContext<Group[] | null>(null);
 
+// Max width of the central content area
+export const maxStackWidth = 800;
+
 export function App() {
   const [session, setSession] = useState<Session | null>(null);
   const checkSession = async () => {
@@ -67,10 +70,6 @@ export function App() {
               },
             })}
           >
-            {/*
-        APP ENTRY POINT
-        */}
-
             <Router session={session} getGroups={getGroups} />
           </AppShell>
         </SessionContext.Provider>

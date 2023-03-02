@@ -44,6 +44,10 @@ function IntensitySelector({
         <IntensityAccordion />
 
         <Card withBorder>
+          <Title order={2} mb={'md'}>
+            Select A Maximum Intensity
+          </Title>
+
           <SegmentedControl
             w="100%"
             mb={'md'}
@@ -59,6 +63,9 @@ function IntensitySelector({
             }))}
             onChange={(value) => setGroupIntensity(value as TopicIntensity)}
           />
+          <Title order={3} mb={'xs'}>
+            Example:
+          </Title>
           <Card>
             <IntensityExample intensity={groupIntensity} />
             <Overlay opacity={0.05} />

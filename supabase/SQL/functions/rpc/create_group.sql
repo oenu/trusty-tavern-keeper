@@ -35,7 +35,7 @@ invite := REPLACE(invite, '-', '');
 invite := substring(invite, 1, 6);
 END LOOP;
 -- Insert the group into the groups table
-INSERT INTO public.group (name, invite_code, initial_intensity, owner)
+INSERT INTO public.group (name, invite_code, max_intensity, owner)
 VALUES (
     name,
     invite,

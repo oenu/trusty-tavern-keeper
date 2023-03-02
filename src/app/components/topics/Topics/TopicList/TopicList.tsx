@@ -17,7 +17,13 @@ import {
 } from 'src/app/types/supabase-type-extensions';
 import TopicCard from '../TopicCard/TopicCard';
 
-function TopicList({ group_id }: { group_id: number }) {
+function TopicList({
+  group_id,
+  max_intensity,
+}: {
+  group_id: number;
+  max_intensity: TopicIntensity;
+}) {
   const { fetchMembers } = useContext(GroupContext);
 
   // Topics
@@ -188,6 +194,7 @@ function TopicList({ group_id }: { group_id: number }) {
         topicIntensity={topicIntensity}
         isPending={isPending}
         responsesLoading={topicResponsesLoading}
+        maxIntensity={max_intensity}
         handleTopicResponse={handleTopicResponse}
       />
     );
@@ -197,7 +204,10 @@ function TopicList({ group_id }: { group_id: number }) {
     <Paper p="md">
       <Stack>
         <Group position="apart">
-          <Title order={2}>Topic Questions</Title>
+          <Stack>
+            <Title order={2}>Topic Questions</Title>
+            <Text>Group Maximum Intensity: {max_intensity}</Text>
+          </Stack>
           <Button
             color={hasSubmittedTopics ? 'red' : 'blue'}
             onClick={async () => {
@@ -214,12 +224,21 @@ function TopicList({ group_id }: { group_id: number }) {
                 return;
               }
 
-              // Handle empty topic responses (assume fantasy)
-              await submitEmptyTopicResponses(group_id);
-              // Toggle the topics submitted state
+              // If the user hasn't submitted topics, submit them with their default intensity
+              await submitUntouchedTopics(
+                topics,
+                group_id,
+                topicResponses,
+                max_intensity
+              );
+
+              // Go through the topics and change those that are above the max intensity to the max intensity
+              await filterTopicResponses(topicResponses, max_intensity);
+
+              // Toggle the topics submitted state for the user on the group
               await toggleTopicsSubmittedState(group_id);
 
-              // Fetch the user and members
+              // Fetch the user and members to update the interface
               await fetchUser();
               if (fetchMembers) await fetchMembers();
             }}
@@ -240,6 +259,89 @@ function TopicList({ group_id }: { group_id: number }) {
 }
 
 export default TopicList;
+
+/**
+ * Go through the topics presented to the user and submit the ones that haven't been touched with their default intensity ('Fantasy')
+ * @param {Topic[]} topics The topics
+ * @param {number} group_id The group id
+ * @param {TopicResponse[]} topicResponses The topic responses
+ * @param {TopicIntensity} max_intensity The max intensity
+ * @returns {Promise<void>}
+ * @async
+ */
+
+const submitUntouchedTopics = async (
+  topics: Topic[],
+  group_id: number,
+  topicResponses: TopicResponse[],
+  max_intensity: TopicIntensity
+): Promise<void> => {
+  const user_id = (await supabase.auth.getUser()).data.user?.id;
+  if (!user_id) throw new Error('User is not logged in');
+
+  // Get the topics that haven't been touched
+  const untouchedTopics = topics.filter(
+    (topic) =>
+      !topicResponses.some(
+        (topicResponse) => topicResponse.topic_id === topic.id
+      )
+  );
+
+  // Submit untouched topics
+  const { data, error } = await supabase.from('topic_response').insert(
+    untouchedTopics.map((topic) => ({
+      group_id,
+      user_id,
+      topic_id: topic.id,
+      intensity: max_intensity,
+    }))
+  );
+
+  if (data) console.debug('Submitted untouched topics');
+  else if (error) console.error(error);
+};
+
+/**
+ * Using the group max intensity, overwrite any responses that are above the max intensity
+ * @param {TopicResponse[]} topicResponses - The topic responses to filter
+ * @param {TopicIntensity} maxIntensity - The max intensity for the group
+ * @returns {Promise<void>} - A promise that resolves when the topic responses are filtered
+ * @async
+ */
+const filterTopicResponses = async (
+  topicResponses: TopicResponse[],
+  maxIntensity: TopicIntensity
+): Promise<void> => {
+  const intensityOrder = {
+    [TopicIntensity.Fantasy]: 0,
+    [TopicIntensity.Adventure]: 1,
+    [TopicIntensity.Struggle]: 2,
+    [TopicIntensity.Tragedy]: 3,
+  };
+
+  // Get the topic responses that are above the max intensity
+  const filteredTopicResponses = topicResponses.filter(
+    (topicResponse) =>
+      intensityOrder[topicResponse.intensity] <= intensityOrder[maxIntensity]
+  );
+
+  if (filteredTopicResponses.length === 0) {
+    console.debug(
+      'filterTopicResponses: No topic responses above max intensity, skipping update'
+    );
+    return;
+  }
+
+  // Update the topic responses that are above the max intensity
+  const { data, error } = await supabase
+    .from('topic_response')
+    .upsert(filteredTopicResponses);
+  if (error)
+    throw new Error('Could not filter topic responses: ' + error.message);
+  else if (data)
+    console.debug('filterTopicResponses: Topic responses filtered');
+  else throw new Error('Could not filter topic responses');
+};
 
 /**
  * Fetch Topics
@@ -275,58 +377,6 @@ const fetchTopicResponses = async (
     throw new Error('Could not fetch topic responses: ' + error.message);
   else if (data) return data;
   else throw new Error('Could not fetch topic responses');
-};
-
-/**
- * Submit Empty Topic Responses
- * Submits empty topic responses for all topics at their default intensity if they haven't been submitted yet
- * @param {number} group_id - The group id to submit topic responses for
- * @returns {Promise<void>}
- * @throws {Error} If there is an error submitting topic responses
- * @async
- */
-const submitEmptyTopicResponses = async (group_id: number): Promise<void> => {
-  // Get user id
-  const user_id = (await supabase.auth.getUser()).data.user?.id;
-  if (!user_id) throw new Error('No user id provided');
-
-  // Get all topics and topic responses
-  const topics = await fetchTopics(group_id);
-  const topicResponses = await fetchTopicResponses(group_id);
-
-  // Get all topic ids that don't have a topic response
-  const topicIds = topics.map((topic) => topic.id);
-  const topicResponseIds = topicResponses.map(
-    (topicResponse) => topicResponse.topic_id
-  );
-  const topicIdsWithoutResponses = topicIds.filter(
-    (topicId) => !topicResponseIds.includes(topicId)
-  );
-
-  // If all topics have a topic response, do nothing
-  if (topicIdsWithoutResponses.length === 0) {
-    console.log('All topics have a topic response');
-    return;
-  }
-
-  // Submit empty topic responses for all topics that don't have a topic response
-  const topicResponsesToSubmit = topicIdsWithoutResponses.map((topicId) => ({
-    topic_id: topicId,
-    group_id,
-    user_id,
-    intensity: TopicIntensity.Fantasy,
-  }));
-
-  console.log(
-    `Submitting ${topicResponsesToSubmit.length} empty topic responses`
-  );
-
-  const { error } = await supabase
-    .from('topic_response')
-    .insert(topicResponsesToSubmit);
-
-  if (error)
-    throw new Error('Could not submit empty topic responses: ' + error.message);
 };
 
 /**

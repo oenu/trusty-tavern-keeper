@@ -31,6 +31,7 @@ import { supabase } from 'src/app/supabase/client';
 // Types
 import {
   Group as GroupType,
+  TopicIntensity,
   User,
 } from 'src/app/types/supabase-type-extensions';
 import ContentReport from 'src/app/components/contents/ContentReport/ContentReport';
@@ -260,13 +261,17 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         <GroupContext.Provider
           value={{ group, members, fetchMembers, fetchGroup }}
         >
-          {
+          {group &&
             {
-              survey: <TopicList group_id={group_id_int} />,
+              survey: (
+                <TopicList
+                  group_id={group_id_int}
+                  max_intensity={TopicIntensity[group.max_intensity]}
+                />
+              ),
               report: <TopicReport group_id={group_id_int} />,
               content: <ContentReport group_id={group_id_int} />,
-            }[subRoute]
-          }
+            }[subRoute]}
         </GroupContext.Provider>
       </Stack>
     );

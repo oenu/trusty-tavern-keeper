@@ -7,11 +7,8 @@ import Group from './screens/Group/Group';
 
 import Profile from './screens/Profile/Profile';
 
-import TopicList from './components/topics/Topics/TopicList/TopicList';
-
 // Types
 import { Session } from '@supabase/supabase-js';
-import TopicReport from './components/topics/TopicReport/TopicReport';
 import ContentList from './components/contents/ContentList/ContentList';
 
 function Router({
@@ -30,11 +27,10 @@ function Router({
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
 
       {/* Groups */}
-
-      <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>
-        <Route path="/group/:group_id/report" element={<TopicReport />} />
-        <Route index path="/group/:group_id" element={<TopicList />} />
-      </Route>
+      <Route
+        path="/group/:group_id"
+        element={<Group getGroups={getGroups} />}
+      />
 
       {/* Misc */}
       <Route path="/profile" element={<Profile />} />

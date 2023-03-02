@@ -2,6 +2,7 @@ import {
   Code,
   Group,
   Navbar,
+  Overlay,
   // ScrollArea,
   Text,
 } from '@mantine/core';
@@ -164,7 +165,7 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
   const navbarLinks = (
     <>
       <Navbar.Section grow>{links}</Navbar.Section>
-      <Navbar.Section mb={'md'}>
+      <Navbar.Section>
         <NavLink
           className={cx(classes.link, {
             [classes.linkActive]: location.pathname.includes(`/contents`),
@@ -173,7 +174,7 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
           key="contents"
           onClick={getGroups}
         >
-          <Group style={{ fontWeight: 700 }}>Contents</Group>
+          <Group style={{ fontWeight: 700 }}>Content Preferences</Group>
         </NavLink>
       </Navbar.Section>
     </>
@@ -182,10 +183,6 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
   // Join box and create new group button
   const navbarInteractions = (
     <>
-      <Navbar.Section mb={'md'}>
-        <JoinBox getGroups={getGroups} />
-      </Navbar.Section>
-
       <NavLink
         style={{ marginBottom: '1rem' }}
         className={cx(classes.link, {
@@ -198,6 +195,9 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
           Create New Group
         </Group>
       </NavLink>
+      <Navbar.Section mb={'md'}>
+        <JoinBox getGroups={getGroups} />
+      </Navbar.Section>
     </>
   );
 
@@ -205,6 +205,7 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
     <Navbar width={{ sm: 300 }} p="md" pb="0">
       {navbarHeader}
       {navbarLinks}
+
       {navbarInteractions}
       {navbarFooter}
     </Navbar>

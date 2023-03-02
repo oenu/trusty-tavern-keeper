@@ -26,7 +26,7 @@ VALUES (
 
 
 -- Seed a new group for the test user
-INSERT INTO public.group (name, invite_code, initial_intensity, owner)
+INSERT INTO public.group (name, invite_code, max_intensity, owner)
 VALUES (
     'SQL Seed Group',
     '123456',
