@@ -14,9 +14,9 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
-import TopicReport from 'src/app/components/topics/TopicReport/TopicReport';
-import TopicList from 'src/app/components/topics/Topics/TopicList/TopicList';
-import MemberPreview from '../../components/group/MemberPreview';
+import TopicReport from 'src/app/screens/Group/components/topics/TopicReport/TopicReport';
+import TopicList from 'src/app/screens/Group/components/topics/TopicList/TopicList';
+import MemberPreview from './components/MemberPreview';
 
 // Hooks
 import { createContext, useEffect, useState } from 'react';
@@ -34,7 +34,7 @@ import {
   TopicIntensity,
   User,
 } from 'src/app/types/supabase-type-extensions';
-import ContentReport from 'src/app/components/contents/ContentReport/ContentReport';
+import ContentReport from 'src/app/screens/Group/components/content/ContentReport/ContentReport';
 
 // Local Types
 export type GroupMember = Pick<

@@ -15,7 +15,7 @@ import {
   TopicIntensity,
   TopicResponse,
 } from 'src/app/types/supabase-type-extensions';
-import TopicCard from '../TopicCard/TopicCard';
+import TopicCard from './TopicCard/TopicCard';
 
 function TopicList({
   group_id,

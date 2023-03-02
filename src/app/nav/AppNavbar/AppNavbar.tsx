@@ -1,24 +1,19 @@
-import {
-  Code,
-  Group,
-  Navbar,
-  Overlay,
-  // ScrollArea,
-  Text,
-} from '@mantine/core';
-import { createStyles } from '@mantine/styles';
-import { useContext } from 'react';
-import { FaDiceD20, FaPlus } from 'react-icons/fa';
+// Hooks
 import { NavLink, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import { createStyles } from '@mantine/styles';
+
+// Icons
+import { FaDiceD20, FaPlus } from 'react-icons/fa';
 
 // Components
-import { DiscordButton } from '../../auth/DiscordButton';
+import { Code, Group, Navbar, Text } from '@mantine/core';
+import { DiscordButton } from 'src/app/auth/DiscordButton';
 import { UserButton } from '../UserButton/UserButton';
+import JoinBox from '../JoinBox/JoinBox';
 
 // Supabase
 import { GroupContext, SessionContext } from 'src/app/app';
-
-import JoinBox from '../JoinBox/JoinBox';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');

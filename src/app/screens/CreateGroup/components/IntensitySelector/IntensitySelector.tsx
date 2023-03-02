@@ -12,7 +12,7 @@ import {
 import IntensityAccordion from '../IntensityAccordion/IntensityAccordion';
 
 // Utils
-import { topicIntensityIcons } from 'src/app/components/topics/utils';
+import { topicIntensityIcons } from 'src/app/screens/Group/components/topics/topicUtils';
 
 // Types
 import { TopicIntensity } from 'src/app/types/supabase-type-extensions';

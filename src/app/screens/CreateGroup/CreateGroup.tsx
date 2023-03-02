@@ -27,7 +27,7 @@ function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
   const navigate = useNavigate();
 
   // State
-  const [createGroupError, setCreateGroupError] = useState<string | null>(null);
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
 
   // Intensity
   const [groupIntensity, setGroupIntensity] = useState<TopicIntensity>(
@@ -73,7 +73,12 @@ function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
       intensity: groupIntensity,
     });
 
-    if (error) console.log(error);
+    if (error) {
+      console.error(error);
+      setSupabaseError(error.message);
+      return;
+    }
+
     if (data) {
       console.log(data);
       await getGroups();
@@ -115,9 +120,9 @@ function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
             setGroupIntensity={setGroupIntensity}
           />
 
-          {createGroupError && (
+          {supabaseError && (
             <Alert title="Something went wrong" color="red">
-              {createGroupError}
+              {supabaseError}
             </Alert>
           )}
           <Divider />

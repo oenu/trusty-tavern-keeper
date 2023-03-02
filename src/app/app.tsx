@@ -5,10 +5,10 @@ import styled from 'styled-components';
 import { Session } from '@supabase/supabase-js';
 import { createContext, useEffect, useState } from 'react';
 
-import { AppNavbar } from 'src/app/components/navbar/AppNavbar/AppNavbar';
 import { supabase } from 'src/app/supabase/client';
 import Router from './Router';
 import { Group } from './types/supabase-type-extensions';
+import { AppNavbar } from './nav/AppNavbar/AppNavbar';
 
 const StyledApp = styled.div`
   // Your style here

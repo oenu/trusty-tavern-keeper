@@ -1,15 +1,14 @@
+// Router
 import { Route, Routes } from 'react-router-dom';
 
 // Screens
-
 import CreateGroup from './screens/CreateGroup/CreateGroup';
 import Group from './screens/Group/Group';
-
 import Profile from './screens/Profile/Profile';
 
 // Types
 import { Session } from '@supabase/supabase-js';
-import ContentList from './components/contents/ContentList/ContentList';
+import ContentList from './screens/Profile/components/ContentList/ContentList';
 
 function Router({
   session,
