@@ -1,6 +1,3 @@
--- //HACK - Do not remove this note until the function is finalized and the drop statement is removed
-DROP FUNCTION IF EXISTS public.get_group_content_report(req_group_id INTEGER);
-
 CREATE OR REPLACE FUNCTION public.get_group_content_report(req_group_id INTEGER) RETURNS TABLE (
     id INTEGER,
     -- Content ID
@@ -33,8 +30,3 @@ WHERE cr.user_id IN (
 GROUP BY c.id;
 END;
 $$;
-
-
--- Test
-SELECT *
-FROM public.get_group_content_report(1);
