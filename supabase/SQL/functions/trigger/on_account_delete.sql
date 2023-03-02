@@ -24,3 +24,6 @@ WHERE user_id = OLD.id;
 RETURN OLD;
 END;
 $$;
+
+CREATE OR REPLACE TRIGGER on_account_delete
+AFTER DELETE ON auth.users FOR each ROW EXECUTE PROCEDURE public.on_account_delete();
