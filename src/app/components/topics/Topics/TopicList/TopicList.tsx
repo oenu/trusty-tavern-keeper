@@ -17,7 +17,7 @@ import {
 } from 'src/app/types/supabase-type-extensions';
 import TopicCard from '../TopicCard/TopicCard';
 
-function Topics({ group_id }: { group_id: number }) {
+function TopicList({ group_id }: { group_id: number }) {
   const { fetchMembers } = useContext(GroupContext);
 
   // Topics
@@ -239,7 +239,7 @@ function Topics({ group_id }: { group_id: number }) {
   );
 }
 
-export default Topics;
+export default TopicList;
 
 /**
  * Fetch Topics

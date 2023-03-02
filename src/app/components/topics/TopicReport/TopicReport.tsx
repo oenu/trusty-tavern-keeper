@@ -3,7 +3,6 @@ import { Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
 
 // Hooks
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 
 // Supabase
 import { supabase } from 'src/app/supabase/client';

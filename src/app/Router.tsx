@@ -7,7 +7,7 @@ import Group from './screens/Group/Group';
 
 import Profile from './screens/Profile/Profile';
 
-import Topics from './components/topics/Topics/TopicList/TopicList';
+import TopicList from './components/topics/Topics/TopicList/TopicList';
 
 // Types
 import { Session } from '@supabase/supabase-js';
@@ -33,7 +33,7 @@ function Router({
 
       <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>
         <Route path="/group/:group_id/report" element={<TopicReport />} />
-        <Route index path="/group/:group_id" element={<Topics />} />
+        <Route index path="/group/:group_id" element={<TopicList />} />
       </Route>
 
       {/* Misc */}
