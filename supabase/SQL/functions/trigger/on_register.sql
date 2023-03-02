@@ -17,10 +17,15 @@ INSERT INTO public.user (
     profile_picture
   )
 VALUES (
+    -- User ID
     NEW.id,
+    -- Full name
     NEW.raw_user_meta_data->>'full_name',
+    -- Name + discriminator
     NEW.raw_user_meta_data->>'name',
+    -- Discord ID
     NEW.raw_user_meta_data->>'provider_id',
+    -- Profile picture
     NEW.raw_user_meta_data->>'avatar_url'
   );
 
@@ -34,6 +39,6 @@ RETURN NEW;
 END;
 $$;
 
-CREATE TRIGGER on_register
+CREATE OR REPLACE TRIGGER on_register
 AFTER
 INSERT ON auth.users FOR each ROW EXECUTE PROCEDURE public.on_register();

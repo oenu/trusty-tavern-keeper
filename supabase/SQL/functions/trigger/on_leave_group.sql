@@ -33,5 +33,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER on_leave_group
+CREATE OR REPLACE TRIGGER on_leave_group
 AFTER DELETE ON public.user_group FOR EACH ROW EXECUTE PROCEDURE public.on_leave_group();
