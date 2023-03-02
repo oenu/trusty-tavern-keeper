@@ -1,6 +1,7 @@
 // Components
 import {
   ActionIcon,
+  Alert,
   Button,
   Container,
   CopyButton,
@@ -43,14 +44,14 @@ export type GroupMember = Pick<
 export const GroupContext = createContext({
   group: null as GroupType | null,
   members: null as GroupMember[] | null,
-  user: null as User | null,
+  // user: null as User | null,
   fetchMembers: null as (() => Promise<void>) | null,
   fetchGroup: null as (() => Promise<void>) | null,
 });
 
 // Takes group from url params and fetches group data
 function Group({ getGroups }: { getGroups: () => Promise<void> }) {
-  const requiredMembers = 3;
+  const requiredMembers = 2;
 
   // Get group id from url params
   const { group_id } = useParams();
@@ -59,7 +60,8 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Data States
   const [group, setGroup] = useState<GroupType | null>(null);
   const [members, setMembers] = useState<GroupMember[] | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  // const [user, setUser] = useState<User | null>(null);
+  const [enoughReports, setEnoughReports] = useState<boolean>(false);
 
   // Logic States
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,6 +83,12 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
     console.log(data);
     if (data) {
       setMembers(data);
+
+      // Check if there are enough reports
+      const enoughReports =
+        data.filter((member) => member.topics_submitted).length >=
+        requiredMembers;
+      setEnoughReports(enoughReports);
     } else throw new Error('Could not fetch members' + error?.message);
   };
 
@@ -115,36 +123,11 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
     }
   };
 
-  const fetchUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    error && console.log('Could not fetch user:' + error.message);
-    if (data.user) {
-      // Get discord id from identities
-      const discord_id = data.user?.identities?.find(
-        (identity) => identity.provider === 'discord'
-      )?.user_id;
-
-      // If user has discord id, set user state
-      if (discord_id) {
-        setUser({
-          id: data.user.id,
-          discord_id,
-          full_name: data.user.user_metadata.full_name,
-          name: data.user.user_metadata.name,
-          profile_picture: data.user.user_metadata.profile_picture,
-          content_version: 0, //TODO add content version to user
-        });
-      }
-    }
-  };
-
   // ====================== EFFECTS ======================
 
   useEffect(() => {
     setSubRoute('survey');
-
     fetchGroup();
-    fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group_id]);
 
@@ -208,6 +191,15 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Segmented control for switching between survey and report pages
   const subPageControl = (
     <Paper style={{ width: '100%' }} p="xs">
+      {members &&
+      members?.filter((member) => member.topics_submitted).length <
+        requiredMembers ? (
+        <Alert color="red" title="Not enough members have submitted a survey">
+          You must have at least {requiredMembers} members submit a survey
+          before you can view the report.
+        </Alert>
+      ) : null}
+
       <SegmentedControl
         style={{ width: '100%' }}
         value={subRoute}
@@ -218,19 +210,11 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
             setSubRoute(value);
             return;
           } else {
-            if (
-              members?.filter((member) => member.topics_submitted).length <
-              requiredMembers
-            ) {
+            if (enoughReports) {
               await fetchMembers();
-
-              return members?.filter((member) => member.topics_submitted)
-                .length < requiredMembers
-                ? console.log('Not enough members have submitted a survey')
-                : setSubRoute(value);
-            } else {
-              setSubRoute(value);
-            }
+              if (enoughReports) setSubRoute(value);
+              else console.log('Not enough reports'); //TODO show alert
+            } else setSubRoute(value);
           }
         }}
         data={[
@@ -241,11 +225,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
           {
             label: 'Roleplay Report',
             value: 'report',
-            disabled: true, // TODO: Re-enable when ready
-            // members
-            //   ? members?.filter((member) => member.topics_submitted).length >=
-            //     requiredMembers
-            //   : true,
+            disabled: !enoughReports,
           },
           {
             label: 'Content Report',
@@ -255,8 +235,6 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
       />
     </Paper>
   );
-
-  console.log(members?.length);
 
   // If loading, show loading message else show group info, member list, and sub
   if (loading) {
@@ -280,7 +258,7 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         {subPageControl}
 
         <GroupContext.Provider
-          value={{ group, members, fetchMembers, fetchGroup, user }}
+          value={{ group, members, fetchMembers, fetchGroup }}
         >
           {
             {

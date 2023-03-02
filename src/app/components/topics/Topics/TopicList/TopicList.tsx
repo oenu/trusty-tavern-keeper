@@ -18,7 +18,7 @@ import {
 import TopicCard from '../TopicCard/TopicCard';
 
 function Topics({ group_id }: { group_id: number }) {
-  const { group, members, fetchMembers, user } = useContext(GroupContext);
+  const { fetchMembers } = useContext(GroupContext);
 
   // Topics
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -33,11 +33,28 @@ function Topics({ group_id }: { group_id: number }) {
     []
   );
 
-  const hasSubmittedTopics = members?.find(
-    (member) => member.discord_id === user?.discord_id
-  )?.topics_submitted;
+  const [hasSubmittedTopics, setHasSubmittedTopics] = useState<boolean>(false);
 
   // ====================== FUNCTIONS ======================
+
+  /**
+   * Get user and check if they have submitted topics
+   * @returns {Promise<void>}
+   */
+
+  const fetchUser = async (): Promise<void> => {
+    const user = (await supabase.auth.getUser())?.data;
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('user_group')
+      .select('topics_submitted')
+      .eq('user_id', user.user?.id)
+      .eq('group_id', group_id);
+    error && console.error(error);
+    data && data[0] && data[0].topics_submitted
+      ? setHasSubmittedTopics(true)
+      : setHasSubmittedTopics(false);
+  };
 
   /**
    * Handle Topic Response
@@ -127,6 +144,8 @@ function Topics({ group_id }: { group_id: number }) {
       return;
     }
 
+    fetchUser();
+
     // Fetch topics and topic responses
     fetchTopics(group_id)
       .then((topics: Topic[]) => {
@@ -182,13 +201,14 @@ function Topics({ group_id }: { group_id: number }) {
           <Button
             color={hasSubmittedTopics ? 'red' : 'blue'}
             onClick={async () => {
+              // Verify that the group id is defined
               if (group_id === undefined) {
                 console.error('No group id provided');
                 return;
               }
 
+              // Check if the user is logged in
               const user_id = (await supabase.auth.getUser()).data.user?.id;
-
               if (user_id === undefined) {
                 console.error('No user id provided');
                 return;
@@ -198,7 +218,9 @@ function Topics({ group_id }: { group_id: number }) {
               await submitEmptyTopicResponses(group_id);
               // Toggle the topics submitted state
               await toggleTopicsSubmittedState(group_id);
-              // Update the topics submitted state
+
+              // Fetch the user and members
+              await fetchUser();
               if (fetchMembers) await fetchMembers();
             }}
           >
