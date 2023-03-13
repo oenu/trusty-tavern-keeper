@@ -22,8 +22,6 @@ import { TopicIntensity } from 'src/app/types/supabase-type-extensions';
 import IntensitySelector from './components/IntensitySelector/IntensitySelector';
 
 function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
-  const maxStackWidth = 800;
-
   const navigate = useNavigate();
 
   // State
@@ -93,7 +91,7 @@ function CreateGroup({ getGroups }: { getGroups: () => Promise<void> }) {
       </Title>
 
       <Center>
-        <Stack maw={maxStackWidth}>
+        <Stack>
           <Card mb={'md'}>
             <Title order={2} mb={'md'}>
               Group Name

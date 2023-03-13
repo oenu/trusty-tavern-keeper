@@ -1,6 +1,7 @@
 import { Burger, Group, Header, Text } from '@mantine/core';
 import { useContext } from 'react';
-import { SessionContext } from 'src/app/app';
+import { useNavigate } from 'react-router-dom';
+import { IsMobileContext, SessionContext } from 'src/app/app';
 import { DiscordButton } from 'src/app/auth/DiscordButton/DiscordButton';
 import UserButton from '../UserButton/UserButton';
 
@@ -11,13 +12,27 @@ function AppHeader({
   navOpen: boolean;
   setNavOpen: (open: boolean) => void;
 }) {
+  const isMobile = useContext(IsMobileContext);
+  const navigate = useNavigate();
   const session = useContext(SessionContext);
   return (
     <Header height={'70'}>
       <Group position="apart" noWrap>
         <Group p={'md'}>
-          <Burger opened={navOpen} onClick={() => setNavOpen(!navOpen)} />
-          <Text size="xl" weight={500}>
+          <Burger
+            hidden={!isMobile}
+            opened={navOpen}
+            onClick={() => setNavOpen(!navOpen)}
+          />
+
+          <Text
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              navigate('/');
+            }}
+            size="xl"
+            weight={500}
+          >
             Trusty Tavern Keeper
           </Text>
         </Group>
@@ -28,6 +43,7 @@ function AppHeader({
               name={session?.user.user_metadata.full_name}
               discriminator={session?.user?.identities?.[0]?.identity_data.name}
               short={window.innerWidth < 640}
+              customOnClick={() => setNavOpen(!navOpen)}
             />
           ) : (
             <DiscordButton
@@ -37,6 +53,7 @@ function AppHeader({
                 console.log(response);
               }}
               label={window.innerWidth > 640}
+
               // If we are sm then use short version of button (using mantine)
             />
           )}

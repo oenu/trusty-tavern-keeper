@@ -49,7 +49,7 @@ function IntensitySelector({
           </Title>
 
           <SegmentedControl
-            w="100%"
+            // w="100%"
             mb={'md'}
             value={groupIntensity}
             data={Object.keys(TopicIntensity).map((intensity) => ({

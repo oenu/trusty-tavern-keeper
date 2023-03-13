@@ -1,4 +1,5 @@
 import { AppShell } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 
 // App Router
 import { Session } from '@supabase/supabase-js';
@@ -12,6 +13,9 @@ import { Group } from './types/supabase-type-extensions';
 
 export const SessionContext = createContext<Session | null>(null);
 export const GroupContext = createContext<Group[] | null>(null);
+export const IsMobileContext = createContext<boolean>(
+  window.innerWidth < 768 ? true : false
+);
 
 // Max width of the central content area
 export const maxStackWidth = 800;
@@ -35,7 +39,16 @@ export function App() {
     }
   };
 
+  // Mobile nav
   const [navOpen, setNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    window.innerWidth < 768 ? true : false
+  );
+  const resizeTest = useMediaQuery('(max-width: 768px)');
+
+  useEffect(() => {
+    setIsMobile(resizeTest);
+  }, [resizeTest]);
 
   useEffect(() => {
     checkSession();
@@ -49,32 +62,31 @@ export function App() {
   });
 
   // Using context to pass session to all components
-
   return (
-    <GroupContext.Provider value={groups}>
-      <SessionContext.Provider value={session}>
-        <AppShell
-          header={<AppHeader navOpen={navOpen} setNavOpen={setNavOpen} />}
-          navbar={
-            <AppNavbar
-              getGroups={getGroups}
-              navOpen={navOpen}
-              setNavOpen={setNavOpen}
-            />
-          }
-          styles={(theme) => ({
-            main: {
-              backgroundColor:
-                theme.colorScheme === 'dark'
-                  ? theme.colors.dark[8]
-                  : theme.colors.gray[0],
-            },
-          })}
-        >
-          <Router getGroups={getGroups} />
-        </AppShell>
-      </SessionContext.Provider>
-    </GroupContext.Provider>
+    <IsMobileContext.Provider value={isMobile}>
+      <GroupContext.Provider value={groups}>
+        <SessionContext.Provider value={session}>
+          <AppShell
+            header={<AppHeader navOpen={navOpen} setNavOpen={setNavOpen} />}
+            navbar={
+              navOpen || !isMobile ? (
+                <AppNavbar getGroups={getGroups} setNavOpen={setNavOpen} />
+              ) : undefined
+            }
+            styles={(theme) => ({
+              main: {
+                backgroundColor:
+                  theme.colorScheme === 'dark'
+                    ? theme.colors.dark[8]
+                    : theme.colors.gray[0],
+              },
+            })}
+          >
+            <Router getGroups={getGroups} />
+          </AppShell>
+        </SessionContext.Provider>
+      </GroupContext.Provider>
+    </IsMobileContext.Provider>
   );
 }
 

@@ -12,6 +12,7 @@ import JoinBox from '../JoinBox/JoinBox';
 
 // Supabase
 import { GroupContext, SessionContext } from 'src/app/app';
+import { RiChatSettingsFill } from 'react-icons/ri';
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon');
@@ -90,11 +91,9 @@ const useStyles = createStyles((theme, _params, getRef) => {
 
 export function AppNavbar({
   getGroups,
-  navOpen,
   setNavOpen,
 }: {
   getGroups: () => Promise<void>;
-  navOpen: boolean;
   setNavOpen: (open: boolean) => void;
 }) {
   const groups = useContext(GroupContext);
@@ -104,7 +103,7 @@ export function AppNavbar({
   const { classes, cx } = useStyles();
 
   return (
-    <Navbar width={{ sm: 300 }} p="md" hidden={!navOpen} hiddenBreakpoint="sm">
+    <Navbar width={{ sm: 300 }} p="md" hiddenBreakpoint="sm">
       {/* Links to groups and a shortcut to the contents page */}
       <Navbar.Section grow component={ScrollArea}>
         <Title order={3} mb="xs">
@@ -119,7 +118,10 @@ export function AppNavbar({
             })}
             to={`/group/${group.id}`}
             key={group.id}
-            onClick={getGroups}
+            onClick={() => {
+              getGroups();
+              setNavOpen(false);
+            }}
           >
             <Group>
               <FaDiceD20 />
@@ -135,9 +137,15 @@ export function AppNavbar({
           })}
           to="/contents"
           key="contents"
-          onClick={getGroups}
+          onClick={() => {
+            getGroups();
+            setNavOpen(false);
+          }}
         >
-          <Group style={{ fontWeight: 700 }}>Content Preferences</Group>
+          <Group style={{ fontWeight: 700 }}>
+            <RiChatSettingsFill />
+            Content Preferences
+          </Group>
         </NavLink>
       </Navbar.Section>
       {/* Join box and create new group button */}
@@ -147,6 +155,7 @@ export function AppNavbar({
           className={cx(classes.link, {
             [classes.linkActive]: location.pathname.includes(`/create`),
           })}
+          onClick={() => setNavOpen(false)}
           to="/create"
         >
           <Group style={{ fontWeight: 700 }}>
