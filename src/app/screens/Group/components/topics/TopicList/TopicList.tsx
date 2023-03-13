@@ -39,6 +39,10 @@ function TopicList({
     []
   );
 
+  // Submitting Topics (button)
+  const [submittingTopics, setSubmittingTopics] = useState<boolean>(false);
+
+  // User
   const [hasSubmittedTopics, setHasSubmittedTopics] = useState<boolean>(false);
 
   // ====================== FUNCTIONS ======================
@@ -208,43 +212,53 @@ function TopicList({
             <Title order={2}>Topic Questions</Title>
             <Text>Group Maximum Intensity: {max_intensity}</Text>
           </Stack>
-          <Button
-            color={hasSubmittedTopics ? 'red' : 'blue'}
-            onClick={async () => {
-              // Verify that the group id is defined
-              if (group_id === undefined) {
-                console.error('No group id provided');
-                return;
-              }
+          <Group>
+            {submittingTopics && <Loader />}
+            <Button
+              color={hasSubmittedTopics ? 'red' : 'blue'}
+              disabled={submittingTopics}
+              onClick={async () => {
+                // Verify that the group id is defined
+                if (group_id === undefined) {
+                  console.error('No group id provided');
+                  return;
+                }
 
-              // Check if the user is logged in
-              const user_id = (await supabase.auth.getUser()).data.user?.id;
-              if (user_id === undefined) {
-                console.error('No user id provided');
-                return;
-              }
+                // Check if the user is logged in
+                const user_id = (await supabase.auth.getUser()).data.user?.id;
+                if (user_id === undefined) {
+                  console.error('No user id provided');
+                  return;
+                }
 
-              // If the user hasn't submitted topics, submit them with their default intensity
-              await submitUntouchedTopics(
-                topics,
-                group_id,
-                topicResponses,
-                max_intensity
-              );
+                // Set the button to loading
+                setSubmittingTopics(true);
 
-              // Go through the topics and change those that are above the max intensity to the max intensity
-              await filterTopicResponses(topicResponses, max_intensity);
+                // If the user hasn't submitted topics, submit them with their default intensity
+                await submitUntouchedTopics(
+                  topics,
+                  group_id,
+                  topicResponses,
+                  max_intensity
+                );
 
-              // Toggle the topics submitted state for the user on the group
-              await toggleTopicsSubmittedState(group_id);
+                // Go through the topics and change those that are above the max intensity to the max intensity
+                await filterTopicResponses(topicResponses, max_intensity);
 
-              // Fetch the user and members to update the interface
-              await fetchUser();
-              if (fetchMembers) await fetchMembers();
-            }}
-          >
-            {hasSubmittedTopics ? 'Withdraw Response' : 'Submit Response'}
-          </Button>
+                // Toggle the topics submitted state for the user on the group
+                await toggleTopicsSubmittedState(group_id);
+
+                // Fetch the user and members to update the interface
+                await fetchUser();
+                if (fetchMembers) await fetchMembers();
+
+                // Set the button to not loading
+                setSubmittingTopics(false);
+              }}
+            >
+              {hasSubmittedTopics ? 'Withdraw Response' : 'Submit Response'}
+            </Button>
+          </Group>
         </Group>
         {topicsLoading ? (
           <Loader size={20} color="blue" />
@@ -335,7 +349,8 @@ const filterTopicResponses = async (
   // Update the topic responses that are above the max intensity
   const { data, error } = await supabase
     .from('topic_response')
-    .upsert(filteredTopicResponses);
+    .upsert(filteredTopicResponses)
+    .select('*');
   if (error)
     throw new Error('Could not filter topic responses: ' + error.message);
   else if (data)

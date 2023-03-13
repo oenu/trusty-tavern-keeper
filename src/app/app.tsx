@@ -1,18 +1,14 @@
 import { AppShell } from '@mantine/core';
-import styled from 'styled-components';
 
 // App Router
 import { Session } from '@supabase/supabase-js';
 import { createContext, useEffect, useState } from 'react';
 
 import { supabase } from 'src/app/supabase/client';
+import AppHeader from './nav/AppHeader/AppHeader';
+import { AppNavbar } from './nav/AppNavbar/AppNavbar';
 import Router from './Router';
 import { Group } from './types/supabase-type-extensions';
-import { AppNavbar } from './nav/AppNavbar/AppNavbar';
-
-const StyledApp = styled.div`
-  // Your style here
-`;
 
 export const SessionContext = createContext<Session | null>(null);
 export const GroupContext = createContext<Group[] | null>(null);
@@ -35,10 +31,11 @@ export function App() {
     const { data, error } = await supabase.from('group').select('*');
     if (error) console.log(error);
     else {
-      console.log('set group list');
       setGroupList(data);
     }
   };
+
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -54,27 +51,30 @@ export function App() {
   // Using context to pass session to all components
 
   return (
-    <StyledApp>
-      <GroupContext.Provider value={groups}>
-        <SessionContext.Provider value={session}>
-          <AppShell
-            padding="md"
-            // header={<NavHeader session={session} />}
-            navbar={<AppNavbar getGroups={getGroups} />}
-            styles={(theme) => ({
-              main: {
-                backgroundColor:
-                  theme.colorScheme === 'dark'
-                    ? theme.colors.dark[8]
-                    : theme.colors.gray[0],
-              },
-            })}
-          >
-            <Router session={session} getGroups={getGroups} />
-          </AppShell>
-        </SessionContext.Provider>
-      </GroupContext.Provider>
-    </StyledApp>
+    <GroupContext.Provider value={groups}>
+      <SessionContext.Provider value={session}>
+        <AppShell
+          header={<AppHeader navOpen={navOpen} setNavOpen={setNavOpen} />}
+          navbar={
+            <AppNavbar
+              getGroups={getGroups}
+              navOpen={navOpen}
+              setNavOpen={setNavOpen}
+            />
+          }
+          styles={(theme) => ({
+            main: {
+              backgroundColor:
+                theme.colorScheme === 'dark'
+                  ? theme.colors.dark[8]
+                  : theme.colors.gray[0],
+            },
+          })}
+        >
+          <Router getGroups={getGroups} />
+        </AppShell>
+      </SessionContext.Provider>
+    </GroupContext.Provider>
   );
 }
 

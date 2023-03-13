@@ -1,15 +1,14 @@
 import {
-  Text,
   Card,
-  Stack,
   Group,
-  Title,
   Loader,
   Paper,
+  Select,
   Skeleton,
-  SegmentedControl,
+  Stack,
+  Text,
+  Title,
 } from '@mantine/core';
-import React from 'react';
 import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
 
 function TopicCard({
@@ -72,8 +71,8 @@ function TopicCard({
             </Text>
           </Paper>
           <Skeleton radius="sm" visible={responsesLoading}>
-            <SegmentedControl
-              fullWidth
+            <Select
+              // fullWidth
               transitionDuration={0}
               disabled={isPending || responsesLoading}
               value={topicIntensity}

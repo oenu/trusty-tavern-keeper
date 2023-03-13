@@ -7,16 +7,10 @@ import Group from './screens/Group/Group';
 import Profile from './screens/Profile/Profile';
 
 // Types
-import { Session } from '@supabase/supabase-js';
 import ContentList from './screens/Profile/components/ContentList/ContentList';
+import Landing from './screens/Landing/Landing';
 
-function Router({
-  session,
-  getGroups,
-}: {
-  session: Session | null;
-  getGroups: () => Promise<void>;
-}) {
+function Router({ getGroups }: { getGroups: () => Promise<void> }) {
   return (
     <Routes>
       {/* Personal Content Prefs */}
@@ -36,7 +30,7 @@ function Router({
 
       {/* Catch */}
 
-      <Route path="*" element={<div>404</div>} />
+      <Route path="*" element={<Landing />} />
     </Routes>
   );
 }

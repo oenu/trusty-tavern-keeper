@@ -1,15 +1,13 @@
 // Hooks
-import { NavLink, useLocation } from 'react-router-dom';
-import { useContext } from 'react';
 import { createStyles } from '@mantine/styles';
+import { useContext } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 
 // Icons
 import { FaDiceD20, FaPlus } from 'react-icons/fa';
 
 // Components
-import { Code, Group, Navbar, Text } from '@mantine/core';
-import { DiscordButton } from 'src/app/auth/DiscordButton';
-import { UserButton } from '../UserButton/UserButton';
+import { Group, Navbar, ScrollArea, Title } from '@mantine/core';
 import JoinBox from '../JoinBox/JoinBox';
 
 // Supabase
@@ -22,16 +20,6 @@ const useStyles = createStyles((theme, _params, getRef) => {
       backgroundColor:
         theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
       paddingBottom: 0,
-    },
-
-    header: {
-      paddingBottom: theme.spacing.md,
-      marginBottom: theme.spacing.md * 1.5,
-      borderBottom: `1px solid ${
-        theme.colorScheme === 'dark'
-          ? theme.colors.dark[4]
-          : theme.colors.gray[2]
-      }`,
     },
 
     link: {
@@ -100,66 +88,46 @@ const useStyles = createStyles((theme, _params, getRef) => {
   };
 });
 
-export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
-  const session = useContext(SessionContext);
+export function AppNavbar({
+  getGroups,
+  navOpen,
+  setNavOpen,
+}: {
+  getGroups: () => Promise<void>;
+  navOpen: boolean;
+  setNavOpen: (open: boolean) => void;
+}) {
   const groups = useContext(GroupContext);
 
   const location = useLocation();
 
   const { classes, cx } = useStyles();
 
-  const links = groups?.map((group) => (
-    <NavLink
-      className={cx(classes.link, {
-        [classes.linkActive]: location.pathname.includes(`/group/${group.id}`),
-      })}
-      to={`/group/${group.id}`}
-      key={group.id}
-      onClick={getGroups}
-    >
-      <Group>
-        <FaDiceD20 />
-        {group.name}
-      </Group>
-    </NavLink>
-  ));
-
-  // Header with title and version
-  const navbarHeader = (
-    <Navbar.Section className={classes.header}>
-      <Group position="apart">
-        <Text size="xl" weight={500}>
-          Trusty Tavern
-        </Text>
-        <Code sx={{ fontWeight: 700 }}>v0.0.1</Code>
-      </Group>
-    </Navbar.Section>
-  );
-
-  // Footer with user button or discord button
-  const navbarFooter = session?.user ? (
-    <Navbar.Section className={classes.footer}>
-      <UserButton
-        image={session?.user.user_metadata.avatar_url}
-        name={session?.user.user_metadata.full_name}
-        discriminator={session?.user?.identities?.[0]?.identity_data.name}
-      />
-    </Navbar.Section>
-  ) : (
-    <DiscordButton
-      session={session}
-      path={'/dashboard'}
-      callback={(response) => {
-        console.log(response);
-      }}
-      label
-    />
-  );
-
-  // Links to groups and a shortcut to the contents page (subject to change)
-  const navbarLinks = (
-    <>
-      <Navbar.Section grow>{links}</Navbar.Section>
+  return (
+    <Navbar width={{ sm: 300 }} p="md" hidden={!navOpen} hiddenBreakpoint="sm">
+      {/* Links to groups and a shortcut to the contents page */}
+      <Navbar.Section grow component={ScrollArea}>
+        <Title order={3} mb="xs">
+          Groups
+        </Title>
+        {groups?.map((group) => (
+          <NavLink
+            className={cx(classes.link, {
+              [classes.linkActive]: location.pathname.includes(
+                `/group/${group.id}`
+              ),
+            })}
+            to={`/group/${group.id}`}
+            key={group.id}
+            onClick={getGroups}
+          >
+            <Group>
+              <FaDiceD20 />
+              {group.name}
+            </Group>
+          </NavLink>
+        ))}
+      </Navbar.Section>
       <Navbar.Section>
         <NavLink
           className={cx(classes.link, {
@@ -172,37 +140,24 @@ export function AppNavbar({ getGroups }: { getGroups: () => Promise<void> }) {
           <Group style={{ fontWeight: 700 }}>Content Preferences</Group>
         </NavLink>
       </Navbar.Section>
-    </>
-  );
-
-  // Join box and create new group button
-  const navbarInteractions = (
-    <>
-      <NavLink
-        style={{ marginBottom: '1rem' }}
-        className={cx(classes.link, {
-          [classes.linkActive]: location.pathname.includes(`/create`),
-        })}
-        to="/create"
-      >
-        <Group style={{ fontWeight: 700 }}>
-          <FaPlus />
-          Create New Group
-        </Group>
-      </NavLink>
+      {/* Join box and create new group button */}
+      <Navbar.Section mb={'md'}>
+        <NavLink
+          style={{ marginBottom: '1rem' }}
+          className={cx(classes.link, {
+            [classes.linkActive]: location.pathname.includes(`/create`),
+          })}
+          to="/create"
+        >
+          <Group style={{ fontWeight: 700 }}>
+            <FaPlus />
+            Create New Group
+          </Group>
+        </NavLink>
+      </Navbar.Section>
       <Navbar.Section mb={'md'}>
         <JoinBox getGroups={getGroups} />
       </Navbar.Section>
-    </>
-  );
-
-  return (
-    <Navbar width={{ sm: 300 }} p="md" pb="0">
-      {navbarHeader}
-      {navbarLinks}
-
-      {navbarInteractions}
-      {navbarFooter}
     </Navbar>
   );
 }

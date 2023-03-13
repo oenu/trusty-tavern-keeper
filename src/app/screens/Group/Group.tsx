@@ -61,8 +61,8 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   // Data States
   const [group, setGroup] = useState<GroupType | null>(null);
   const [members, setMembers] = useState<GroupMember[] | null>(null);
-  // const [user, setUser] = useState<User | null>(null);
   const [enoughReports, setEnoughReports] = useState<boolean>(false);
+  const [userIsOwner, setUserIsOwner] = useState<boolean>(false);
 
   // Logic States
   const [loading, setLoading] = useState<boolean>(true);
@@ -75,6 +75,22 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
   const navigate = useNavigate();
 
   // ====================== FUNCTIONS ======================
+
+  const deleteGroup = async () => {
+    if (group_id === undefined) throw new Error('No group id provided');
+    //Check if user is owner
+    group?.owner === (await supabase.auth.getUser())?.data.user?.id
+      ? await supabase
+          .from('group')
+          .delete()
+          .eq('id', group_id_int)
+          .then((res) => {
+            console.log(res);
+            getGroups();
+            navigate('/groups');
+          })
+      : console.error('User attempted to delete group they do not own');
+  };
 
   const fetchMembers = async () => {
     if (group_id === undefined) throw new Error('No group id provided');
@@ -113,6 +129,14 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         return;
       } else {
         setGroup(data[0]);
+
+        // Check if user is owner
+        const userIsOwner =
+          data[0].owner === (await supabase.auth.getUser())?.data.user?.id;
+        setUserIsOwner(userIsOwner);
+        userIsOwner
+          ? console.debug('User is owner')
+          : console.debug('User is not owner');
         try {
           await fetchMembers();
         } catch (error) {
@@ -139,6 +163,15 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
     <MantineGroup position={'apart'}>
       <Title>{group?.name}</Title>
       <MantineGroup>
+        <Button
+          variant="outline"
+          color="red"
+          disabled={!userIsOwner}
+          hidden={!userIsOwner}
+          onClick={deleteGroup}
+        >
+          Delete
+        </Button>
         <Button
           onClick={async () => {
             if (group_id === undefined) throw new Error('No group id provided');
@@ -220,16 +253,16 @@ function Group({ getGroups }: { getGroups: () => Promise<void> }) {
         }}
         data={[
           {
-            label: 'Roleplay Survey',
+            label: 'Roleplay',
             value: 'survey',
           },
           {
-            label: 'Roleplay Report',
+            label: 'Report',
             value: 'report',
             disabled: !enoughReports,
           },
           {
-            label: 'Content Report',
+            label: 'Content',
             value: 'content',
           },
         ]}

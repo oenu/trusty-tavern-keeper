@@ -5,7 +5,7 @@ import { supabase } from 'src/app/supabase/client';
 // Components
 import { Button } from '@mantine/core';
 import { SiDiscord } from 'react-icons/si';
-import { signInWithDiscord } from './functions/discord';
+import { signInWithDiscord } from '../functions/discord';
 
 // Component to handle Discord login - shows sign in button if user is not logged in and sign out button if user is logged in
 export function DiscordButton({
