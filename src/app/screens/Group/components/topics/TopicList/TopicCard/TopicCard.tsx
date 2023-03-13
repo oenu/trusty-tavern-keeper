@@ -72,8 +72,6 @@ function TopicCard({
           </Paper>
           <Skeleton radius="sm" visible={responsesLoading}>
             <Select
-              // fullWidth
-              transitionDuration={0}
               disabled={isPending || responsesLoading}
               value={topicIntensity}
               onChange={(value) => {
