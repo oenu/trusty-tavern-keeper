@@ -29,6 +29,7 @@ function AppHeader({
           <Text
             style={{ cursor: 'pointer' }}
             onClick={() => {
+              setNavOpen(false);
               navigate('/');
             }}
             size="xl"
