@@ -15,8 +15,9 @@ function AppHeader({
   const isMobile = useContext(IsMobileContext);
   const navigate = useNavigate();
   const session = useContext(SessionContext);
+
   return (
-    <Header height={'70'}>
+    <Header height={70}>
       <Group position="apart" noWrap>
         <Group p={'md'}>
           <Burger
