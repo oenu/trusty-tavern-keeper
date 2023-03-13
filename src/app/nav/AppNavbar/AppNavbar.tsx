@@ -17,84 +17,8 @@ import {
 import JoinBox from '../JoinBox/JoinBox';
 
 // Supabase
-import { GroupContext, SessionContext } from 'src/app/app';
 import { RiChatSettingsFill } from 'react-icons/ri';
-import { ThemeContext } from '@emotion/react';
-
-// const useStyles = createStyles((theme, _params, getRef) => {
-//   // const icon = getRef('icon');
-//   return {
-//     navbar: {
-//       backgroundColor:
-//         theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
-//       paddingBottom: 0,
-//     },
-
-//     link: {
-//       cursor: 'pointer',
-//       ...theme.fn.focusStyles(),
-//       display: 'flex',
-//       alignItems: 'center',
-//       textDecoration: 'none',
-//       fontSize: theme.fontSizes.sm,
-//       color:
-//         theme.colorScheme === 'dark'
-//           ? theme.colors.dark[1]
-//           : theme.colors.gray[7],
-//       padding: `${theme.spacing.xs}px ${theme.spacing.sm}px`,
-//       borderRadius: theme.radius.sm,
-//       fontWeight: 500,
-
-//       '&:hover': {
-//         backgroundColor:
-//           theme.colorScheme === 'dark'
-//             ? theme.colors.dark[6]
-//             : theme.colors.gray[0],
-//         color: theme.colorScheme === 'dark' ? theme.white : theme.black,
-
-//         [`& .${icon}`]: {
-//           color: theme.colorScheme === 'dark' ? theme.white : theme.black,
-//         },
-//       },
-//     },
-
-//     linkIcon: {
-//       ref: icon,
-//       color:
-//         theme.colorScheme === 'dark'
-//           ? theme.colors.dark[2]
-//           : theme.colors.gray[6],
-//       marginRight: theme.spacing.sm,
-//     },
-
-//     linkActive: {
-//       '&, &:hover': {
-//         backgroundColor: theme.fn.variant({
-//           variant: 'light',
-//           color: theme.primaryColor,
-//         }).background,
-//         color: theme.fn.variant({ variant: 'light', color: theme.primaryColor })
-//           .color,
-//         [`& .${icon}`]: {
-//           color: theme.fn.variant({
-//             variant: 'light',
-//             color: theme.primaryColor,
-//           }).color,
-//         },
-//       },
-//     },
-
-//     footer: {
-//       marginLeft: -theme.spacing.md,
-//       marginRight: -theme.spacing.md,
-//       borderTop: `1px solid ${
-//         theme.colorScheme === 'dark'
-//           ? theme.colors.dark[4]
-//           : theme.colors.gray[3]
-//       }`,
-//     },
-//   };
-// });
+import { GroupContext } from 'src/app/app';
 
 export function AppNavbar({
   getGroups,
