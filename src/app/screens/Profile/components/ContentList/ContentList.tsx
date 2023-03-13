@@ -153,7 +153,10 @@ function ContentList() {
         <Stack justify={'space-between'} style={{ height: '100%' }}>
           <Stack>
             <Group position="apart" noWrap>
-              <Title order={3}>{content.name}</Title>
+              <Group>
+                <Text>{content.emoji}</Text>
+                <Title order={3}>{content.name}</Title>
+              </Group>
               {pendingContentResponses.includes(content.id) && (
                 <Loader size={20} color="blue" />
               )}
@@ -395,7 +398,6 @@ const fetchContents = async (): Promise<Content[]> => {
     .select('*')
     .then(({ data, error }) => {
       if (data) {
-        console.debug('Fetched contents' + data);
         return data;
       } else if (error) {
         console.error(error);
@@ -423,7 +425,6 @@ const fetchContentResponses = async (
     .in('content_id', contentIds)
     .then(({ data, error }) => {
       if (data) {
-        console.debug('Fetched content responses' + data);
         return data;
       } else if (error) {
         throw error;

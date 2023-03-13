@@ -12,7 +12,7 @@ import {
 import IntensityAccordion from '../IntensityAccordion/IntensityAccordion';
 
 // Utils
-import { topicIntensityIcons } from 'src/app/components/topics/utils';
+import { topicIntensityIcons } from 'src/app/screens/Group/components/topics/topicUtils';
 
 // Types
 import { TopicIntensity } from 'src/app/types/supabase-type-extensions';
@@ -44,8 +44,12 @@ function IntensitySelector({
         <IntensityAccordion />
 
         <Card withBorder>
+          <Title order={2} mb={'md'}>
+            Select A Maximum Intensity
+          </Title>
+
           <SegmentedControl
-            w="100%"
+            // w="100%"
             mb={'md'}
             value={groupIntensity}
             data={Object.keys(TopicIntensity).map((intensity) => ({
@@ -59,6 +63,9 @@ function IntensitySelector({
             }))}
             onChange={(value) => setGroupIntensity(value as TopicIntensity)}
           />
+          <Title order={3} mb={'xs'}>
+            Example:
+          </Title>
           <Card>
             <IntensityExample intensity={groupIntensity} />
             <Overlay opacity={0.05} />

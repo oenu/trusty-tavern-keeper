@@ -1,26 +1,16 @@
+// Router
 import { Route, Routes } from 'react-router-dom';
 
 // Screens
-
 import CreateGroup from './screens/CreateGroup/CreateGroup';
 import Group from './screens/Group/Group';
-
 import Profile from './screens/Profile/Profile';
 
-import TopicList from './components/topics/Topics/TopicList/TopicList';
-
 // Types
-import { Session } from '@supabase/supabase-js';
-import TopicReport from './components/topics/TopicReport/TopicReport';
-import ContentList from './components/contents/ContentList/ContentList';
+import ContentList from './screens/Profile/components/ContentList/ContentList';
+import Landing from './screens/Landing/Landing';
 
-function Router({
-  session,
-  getGroups,
-}: {
-  session: Session | null;
-  getGroups: () => Promise<void>;
-}) {
+function Router({ getGroups }: { getGroups: () => Promise<void> }) {
   return (
     <Routes>
       {/* Personal Content Prefs */}
@@ -30,18 +20,17 @@ function Router({
       <Route path="/create" element={<CreateGroup getGroups={getGroups} />} />
 
       {/* Groups */}
-
-      <Route path="/group/:group_id" element={<Group getGroups={getGroups} />}>
-        <Route path="/group/:group_id/report" element={<TopicReport />} />
-        <Route index path="/group/:group_id" element={<TopicList />} />
-      </Route>
+      <Route
+        path="/group/:group_id"
+        element={<Group getGroups={getGroups} />}
+      />
 
       {/* Misc */}
       <Route path="/profile" element={<Profile />} />
 
       {/* Catch */}
 
-      <Route path="*" element={<div>404</div>} />
+      <Route path="*" element={<Landing />} />
     </Routes>
   );
 }

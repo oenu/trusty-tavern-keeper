@@ -1,15 +1,14 @@
 import {
-  Text,
   Card,
-  Stack,
   Group,
-  Title,
   Loader,
   Paper,
+  Select,
   Skeleton,
-  SegmentedControl,
+  Stack,
+  Text,
+  Title,
 } from '@mantine/core';
-import React from 'react';
 import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
 
 function TopicCard({
@@ -18,11 +17,13 @@ function TopicCard({
   responsesLoading,
   topicIntensity = TopicIntensity.Fantasy, // Default to fantasy
   handleTopicResponse,
+  maxIntensity,
 }: {
   topic: Topic;
   isPending: boolean;
   responsesLoading: boolean;
   topicIntensity: TopicIntensity;
+  maxIntensity: TopicIntensity;
   handleTopicResponse: (
     topicId: Topic['id'],
     intensity: TopicIntensity
@@ -34,6 +35,23 @@ function TopicCard({
     [TopicIntensity.Struggle]: topic.struggle_example,
     [TopicIntensity.Tragedy]: topic.tragedy_example,
   };
+
+  const isDisabled = {
+    // Tragedy is disabled if max intensity is not tragedy
+    [TopicIntensity.Tragedy]: maxIntensity !== TopicIntensity.Tragedy,
+    // Struggle is disabled if max intensity is not tragedy or struggle
+    [TopicIntensity.Struggle]:
+      maxIntensity !== TopicIntensity.Tragedy &&
+      maxIntensity !== TopicIntensity.Struggle,
+    // Adventure is disabled if max intensity is not tragedy, struggle, or adventure
+    [TopicIntensity.Adventure]:
+      maxIntensity !== TopicIntensity.Tragedy &&
+      maxIntensity !== TopicIntensity.Struggle &&
+      maxIntensity !== TopicIntensity.Adventure,
+    // Fantasy is never disabled
+    [TopicIntensity.Fantasy]: false,
+  };
+
   return (
     <Card key={topic.id}>
       <Stack justify={'space-between'} style={{ height: '100%' }}>
@@ -53,8 +71,8 @@ function TopicCard({
             </Text>
           </Paper>
           <Skeleton radius="sm" visible={responsesLoading}>
-            <SegmentedControl
-              fullWidth
+            <Select
+              // fullWidth
               transitionDuration={0}
               disabled={isPending || responsesLoading}
               value={topicIntensity}
@@ -67,6 +85,10 @@ function TopicCard({
               data={Object.keys(TopicIntensity).map((key) => ({
                 label: key,
                 value: TopicIntensity[key as keyof typeof TopicIntensity],
+                disabled:
+                  isDisabled[
+                    TopicIntensity[key as keyof typeof TopicIntensity]
+                  ],
               }))}
             />
           </Skeleton>

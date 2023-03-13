@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Accordion, Group, Text } from '@mantine/core';
 
 // Utils
-import { topicIntensityDescriptions } from 'src/app/components/topics/utils';
+import { topicIntensityDescriptions } from 'src/app/screens/Group/components/topics/topicUtils';
 
 // Types
 import { TopicIntensity } from 'src/app/types/supabase-type-extensions';

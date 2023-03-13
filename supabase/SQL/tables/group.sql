@@ -9,7 +9,7 @@ CREATE TABLE public.group (
   -- Group name
   invite_code TEXT UNIQUE NOT NULL,
   -- Invite code
-  initial_intensity TopicIntensity NOT NULL,
+  max_intensity TopicIntensity NOT NULL,
   -- Initial intensity of the group (used to determine the maximum intensity of the group) (Fantasy', 'Adventure', 'Struggle', 'Tragedy')
   owner uuid REFERENCES public.user ON DELETE CASCADE NOT NULL -- Owner of the group
 );

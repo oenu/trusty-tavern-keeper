@@ -3,7 +3,7 @@ import { Text } from '@mantine/core';
 
 // Hooks
 import { useEffect, useState } from 'react';
-import TopicCard from 'src/app/components/topics/Topics/TopicCard/TopicCard';
+import TopicCard from 'src/app/screens/Group/components/topics/TopicList/TopicCard/TopicCard';
 
 // Utils
 
@@ -41,6 +41,7 @@ function IntensityExample({ intensity }: { intensity: TopicIntensity }) {
       isPending={false}
       responsesLoading={false}
       topicIntensity={intensity}
+      maxIntensity={intensity}
       handleTopicResponse={() => {
         // do nothing
       }}

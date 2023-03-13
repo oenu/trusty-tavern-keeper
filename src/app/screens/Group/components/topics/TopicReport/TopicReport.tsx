@@ -12,7 +12,7 @@ import { IconContext } from 'react-icons/lib';
 import { Topic, TopicIntensity } from 'src/app/types/supabase-type-extensions';
 
 // Utils
-import { topicIntensityIcons } from '../utils';
+import { topicIntensityIcons } from '../topicUtils';
 
 interface GroupTopicResponse {
   topic_id: Topic['id'];
@@ -63,7 +63,7 @@ function TopicReport({ group_id }: { group_id: number }) {
     groupTopicResponse: GroupTopicResponse;
     intensity: TopicIntensity;
   }) => {
-    const { topic_id, topic_description, topic_name } = groupTopicResponse;
+    const { topic_id, topic_name } = groupTopicResponse;
 
     const reportExample = {
       [TopicIntensity.Fantasy]: groupTopicResponse.fantasy_example,
